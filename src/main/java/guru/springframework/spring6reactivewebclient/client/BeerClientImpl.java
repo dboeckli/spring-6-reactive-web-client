@@ -59,4 +59,17 @@ public class BeerClientImpl implements BeerClient {
         return webClient.get().uri(BEER_PATH)
             .retrieve().bodyToFlux(BeerDto.class);
     }
+
+    @Override
+    public Mono<BeerDto> createBeer(BeerDto beerDto) {
+        return webClient.post()
+            .uri(BEER_PATH)
+            .body(Mono.just(beerDto), BeerDto.class)
+            .retrieve()
+            .toBodilessEntity()
+            .flatMap(voidResponseEntity -> Mono.just(voidResponseEntity
+                .getHeaders().get("Location").getFirst()))
+            .map(path -> path.split("/")[path.split("/").length -1])
+            .flatMap(this::getBeerById);
+    }
 }

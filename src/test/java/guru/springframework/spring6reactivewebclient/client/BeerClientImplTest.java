@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -128,5 +129,32 @@ class BeerClientImplTest {
         await().atMost(5, TimeUnit.SECONDS).untilTrue(atomicBoolean);
         assertTrue(atomicBoolean.get());
         assertEquals(3, atomicListResponse.get().size());
+    }
+
+    @Test
+    void testCreateBeer() {
+        AtomicBoolean atomicBoolean = new AtomicBoolean(false);
+        AtomicReference<BeerDto> atomicResponse = new AtomicReference<>();
+
+        BeerDto newDto = BeerDto.builder()
+            .price(new BigDecimal("10.99"))
+            .beerName("Created Beer")
+            .beerStyle("IPA")
+            .quantityOnHand(500)
+            .upc("123245")
+            .build();
+
+        beerClient.createBeer(newDto)
+            .subscribe(dto -> {
+                log.info("### Response: " + dto);
+                atomicBoolean.set(true);
+                atomicResponse.set(dto);
+            });
+
+        await().untilTrue(atomicBoolean);
+
+        assertTrue(atomicBoolean.get());
+        assertEquals("Created Beer", atomicResponse.get().getBeerName());
+        assertNotNull(atomicResponse.get().getId());
     }
 }

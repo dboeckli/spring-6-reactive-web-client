@@ -21,4 +21,6 @@ public interface BeerClient {
 
     Flux<BeerDto> listBeerAsDtos();
     
+    Mono<BeerDto> createBeer(BeerDto beerDto);
+    
 }
