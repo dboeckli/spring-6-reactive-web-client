@@ -4,3 +4,6 @@ server:
 spring:
   application:
     name: spring-6-reactive-web-client
+    
+webclient:
+  rooturl: http://localhost:8080

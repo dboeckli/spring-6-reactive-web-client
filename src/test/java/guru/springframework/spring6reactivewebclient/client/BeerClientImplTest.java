@@ -27,6 +27,41 @@ class BeerClientImplTest {
     BeerClient beerClient;
 
     @Test
+    void testGetBeerByBeerStyle() {
+        AtomicBoolean atomicBoolean = new AtomicBoolean(false);
+        AtomicReference<List<BeerDto>> atomicListResponse = new AtomicReference<>(new ArrayList<>());
+
+        beerClient.getBeerByBeerStyle("Pale Ale").subscribe(response -> {
+            log.info("### Response: " + response);
+            atomicListResponse.get().add(response);
+            if (atomicListResponse.get().size() == 2) {
+                atomicBoolean.set(true);
+            }
+        });
+
+        await().atMost(5, TimeUnit.SECONDS).untilTrue(atomicBoolean);
+        assertTrue(atomicBoolean.get());
+        assertEquals(2, atomicListResponse.get().size());
+    }
+    
+    @Test
+    void testGetBeerById() {
+        AtomicBoolean atomicBoolean = new AtomicBoolean(false);
+        AtomicReference<BeerDto> atomicResponse = new AtomicReference<>();
+
+        beerClient.listBeerAsDtos().take(1)
+            .flatMap(beerDto -> beerClient.getBeerById(beerDto.getId()))
+            .subscribe(beerDto -> {
+                log.info("### Response: " + beerDto);
+                atomicBoolean.set(true);
+                atomicResponse.set(beerDto);
+            });
+
+        await().atMost(5, TimeUnit.SECONDS).untilTrue(atomicBoolean);
+        assertNotNull(atomicResponse.get());
+    }
+
+    @Test
     void testListBeer() {
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
         AtomicReference<String> atomicResponse = new AtomicReference<>();
