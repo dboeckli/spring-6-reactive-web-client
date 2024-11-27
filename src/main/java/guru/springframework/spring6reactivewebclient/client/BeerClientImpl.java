@@ -72,4 +72,22 @@ public class BeerClientImpl implements BeerClient {
             .map(path -> path.split("/")[path.split("/").length -1])
             .flatMap(this::getBeerById);
     }
+
+    @Override
+    public Mono<BeerDto> updateBeer(String beerId, BeerDto beerDto) {
+        // TODO: Implement PUT operation
+        return null;
+    }
+
+    @Override
+    public Mono<BeerDto> patchBeer(String beerId, BeerDto beerDto) {
+        // TODO: Implement PATCH operation
+        return null;
+    }
+
+    @Override
+    public Mono<Void> deleteBeer(String beerId) {
+        // TODO: Implement DELETE operation
+        return null;
+    }
 }

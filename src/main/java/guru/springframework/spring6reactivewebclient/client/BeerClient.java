@@ -22,5 +22,11 @@ public interface BeerClient {
     Flux<BeerDto> listBeerAsDtos();
     
     Mono<BeerDto> createBeer(BeerDto beerDto);
+
+    Mono<BeerDto> updateBeer(String beerId, BeerDto beerDto);
+
+    Mono<BeerDto> patchBeer(String beerId, BeerDto beerDto);
+
+    Mono<Void> deleteBeer(String beerId);
     
 }
