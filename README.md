@@ -1,13 +1,22 @@
 # spring-6-reactive-web-client
-Examples of Reactive Programming with Spring Framework.
+Welcome to the Reactive Programming with Spring Framework project! This project is a practical exploration of reactive programming using Spring Framework 5, 
+designed to help you understand and implement reactive systems. Here's a quick guide to get you started:
 
-MongoDB runs on mongodb://localhost:27017
-Runs as a service on port 27017
+## Project Purpose
+The main goal of this project is to demonstrate how to build reactive applications using Spring Framework. It depends on a backend service (project spring-6-reactive-mongo)
+that interacts with MongoDB, showcasing how to handle asynchronous data streams effectively.
 
-This projects needs as well the spring-6-reactive-mongo backend project running on port 8080
+## Getting Started
+To start contributing, ensure you have the following set up:
+* Spring Framework 6: The backbone of our reactive application.
+* Backend Project spring-6-reactive-mongo Started listening on port 8080. The Backend is interacting with the MondoDB (either native running on mongodb://localhost:27017 or as Docker TestContainer 
+which does not require installed MongoDB instance
+* Docker Desktop: Required for running TestContainers, which are used for testing in a Docker environment.
 
-In Unit Test we are using the TestContainer within Docker which requires Docker Desktop installed. In that case the port does change with each test.
+Remark: The unit tests are disabled because they require that the backend is up and running. Locally those tests requires that you have started the backend. This requirement
+is currently not possible in the github pipeline and the build would fail there.
 
+## Spring Framework Guru Course
 This repository has examples from my course [Reactive Programming with Spring Framework 5](https://www.udemy.com/reactive-programming-with-spring-framework-5/?couponCode=GITHUB_REPO_SF5B2G)
 
 ## All Spring Framework Guru Courses

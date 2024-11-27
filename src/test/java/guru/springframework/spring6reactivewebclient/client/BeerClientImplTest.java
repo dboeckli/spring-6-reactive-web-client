@@ -3,10 +3,11 @@ package guru.springframework.spring6reactivewebclient.client;
 import com.fasterxml.jackson.databind.JsonNode;
 import guru.springframework.spring6reactivewebclient.dto.BeerDto;
 import lombok.extern.java.Log;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Log
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Disabled("TODO: all those tests are failing in the github pipeline, because the server part (project: spring-6-reactive-mongo) is not running.")
 class BeerClientImplTest {
     
@@ -28,6 +30,7 @@ class BeerClientImplTest {
     BeerClient beerClient;
 
     @Test
+    @Order(0)
     void testGetBeerByBeerStyle() {
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
         AtomicReference<List<BeerDto>> beerResponse = new AtomicReference<>(new ArrayList<>());
@@ -46,6 +49,7 @@ class BeerClientImplTest {
     }
     
     @Test
+    @Order(0)
     void testGetBeerById() {
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
         AtomicReference<BeerDto> beerResponse = new AtomicReference<>();
@@ -63,6 +67,7 @@ class BeerClientImplTest {
     }
 
     @Test
+    @Order(0)
     void testListBeer() {
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
         AtomicReference<String> beerListResponse = new AtomicReference<>();
@@ -78,6 +83,7 @@ class BeerClientImplTest {
     }
 
     @Test
+    @Order(0)
     void listBeerMap() {
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
         AtomicReference<List<Map>> beerListResponse = new AtomicReference<>(new ArrayList<>());
@@ -96,6 +102,7 @@ class BeerClientImplTest {
     }
 
     @Test
+    @Order(0)
     void testListBeerJsonNode() {
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
         AtomicReference<List<JsonNode>> beerListResponse = new AtomicReference<>(new ArrayList<>());
@@ -114,6 +121,7 @@ class BeerClientImplTest {
     }
 
     @Test
+    @Order(0)
     void testListBeerAsDtos() {
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
         AtomicReference<List<BeerDto>> beerListResponse = new AtomicReference<>(new ArrayList<>());
@@ -132,6 +140,7 @@ class BeerClientImplTest {
     }
 
     @Test
+    @Order(1)
     void testCreateBeer() {
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
         AtomicReference<BeerDto> createdBeer = new AtomicReference<>();
@@ -159,6 +168,7 @@ class BeerClientImplTest {
     }
 
     @Test
+    @Order(2)
     void updateBeer() {
         BeerDto beerToUpdate = beerClient.listBeerAsDtos().blockFirst();
         beerToUpdate.setBeerName("Updated Beer");
@@ -166,7 +176,7 @@ class BeerClientImplTest {
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
         AtomicReference<BeerDto> updatedBeer = new AtomicReference<>();
 
-        beerClient.updateBeer(beerToUpdate.getId(), beerToUpdate)
+        beerClient.updateBeer(beerToUpdate)
             .subscribe(dto -> {
                 log.info("### Response: " + dto);
                 atomicBoolean.set(true);
@@ -180,12 +190,65 @@ class BeerClientImplTest {
     }
 
     @Test
+    @Order(3)
     void patchBeer() {
-        // TODO: Implement this test
+        BeerDto beerToPatch = beerClient.listBeerAsDtos().blockFirst();
+        beerToPatch.setBeerName("Patched Beer");
+        String beerStyleBeforePatch = beerToPatch.getBeerStyle();
+        beerToPatch.setBeerStyle(null);
+        BigDecimal priceBeforePatch = beerToPatch.getPrice();
+        beerToPatch.setPrice(null);
+        String upcBeforePatch = beerToPatch.getUpc();
+        beerToPatch.setUpc(null);
+        Integer quantityBeforePatch = beerToPatch.getQuantityOnHand();
+        beerToPatch.setQuantityOnHand(null);
+
+        AtomicBoolean atomicBoolean = new AtomicBoolean(false);
+        AtomicReference<BeerDto> patchedBeer = new AtomicReference<>();
+
+        beerClient.patchBeer(beerToPatch)
+            .subscribe(dto -> {
+                log.info("### Response: " + dto);
+                atomicBoolean.set(true);
+                patchedBeer.set(dto);
+            });
+
+        await().untilTrue(atomicBoolean);
+
+        assertTrue(atomicBoolean.get());
+        assertEquals("Patched Beer", patchedBeer.get().getBeerName());
+        assertEquals(beerStyleBeforePatch, patchedBeer.get().getBeerStyle());
+        assertEquals(priceBeforePatch, patchedBeer.get().getPrice());
+        assertEquals(upcBeforePatch, patchedBeer.get().getUpc());
+        assertEquals(quantityBeforePatch, patchedBeer.get().getQuantityOnHand());
     }
 
     @Test
+    @Order(4)
     void deleteBeer() {
-        // TODO: Implement this test
+        AtomicBoolean atomicBoolean = new AtomicBoolean(false);
+        AtomicReference<BeerDto> beerToDelete = new AtomicReference<>();
+
+        beerClient.listBeerAsDtos()
+            .next()
+            .flatMap(dto -> {
+                beerToDelete.set(dto);
+                return beerClient.deleteBeer(dto.getId());
+            })
+            .doOnSuccess(mt -> {
+                atomicBoolean.set(true);
+            })
+            .subscribe();
+
+        await().untilTrue(atomicBoolean);
+        
+        try {
+            beerClient.getBeerById(beerToDelete.get().getId()).block();
+            fail("Beer not deleted");
+        } catch (WebClientResponseException ex) {
+            log.info("### Beer successful: " + ex.getMessage());
+            assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
+            assertTrue(true);
+        }
     }
 }

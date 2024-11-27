@@ -23,9 +23,9 @@ public interface BeerClient {
     
     Mono<BeerDto> createBeer(BeerDto beerDto);
 
-    Mono<BeerDto> updateBeer(String beerId, BeerDto beerDto);
+    Mono<BeerDto> updateBeer(BeerDto beerDto);
 
-    Mono<BeerDto> patchBeer(String beerId, BeerDto beerDto);
+    Mono<BeerDto> patchBeer(BeerDto beerDto);
 
     Mono<Void> deleteBeer(String beerId);
     
