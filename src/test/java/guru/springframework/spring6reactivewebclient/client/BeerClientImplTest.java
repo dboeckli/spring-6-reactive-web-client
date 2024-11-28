@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @Log
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@Disabled("TODO: all those tests are failing in the github pipeline, because the server part (project: spring-6-reactive-mongo) is not running.")
+@Disabled("TODO: all those tests are failing in the github pipeline, because the server part (project: spring-6-reactive-mongo) is not running. and it requires auth server as well.")
 class BeerClientImplTest {
     
     @Autowired
