@@ -67,6 +67,23 @@
             </snapshots>
         </repository>
     </repositories>
+
+    <profiles>
+        <!-- CI/CD profile for GitHub Actions -->
+        <profile>
+            <id>ci-cd</id>
+            <activation>
+                <property>
+                    <name>env.GITHUB_ACTIONS</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <properties>
+                <github.acions.build>true</github.acions.build>
+                <skip.docker.publish>false</skip.docker.publish>
+            </properties>
+        </profile>
+    </profiles>
     
     <distributionManagement>
         <repository>
