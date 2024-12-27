@@ -257,6 +257,7 @@
                                     ghcr.io/${organization.name}/${project.artifactId}:${project.version}
                                 </tags>
                                 <publish>true</publish>
+                                <verboseLogging>true</verboseLogging>
                             </image>
                             <docker>
                                 <publishRegistry>
@@ -278,6 +279,7 @@
                         </goals>
                         <phase>deploy</phase>
                         <configuration>
+                            
                             <skip>${skip.docker.publish}</skip>
                             <image>
                                 <!--suppress UnresolvedMavenProperty -->
@@ -287,6 +289,7 @@
                                     ${env.DOCKER_USER}/${project.artifactId}:${project.version}
                                 </tags>
                                 <publish>true</publish>
+                                <verboseLogging>true</verboseLogging>
                             </image>
                             <docker>
                                 <publishRegistry>
