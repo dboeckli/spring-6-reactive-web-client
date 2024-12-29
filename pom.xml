@@ -296,7 +296,7 @@
                         </goals>
                         <phase>deploy</phase>
                         <configuration>
-                            
+
                             <skip>${skip.docker.publish}</skip>
                             <image>
                                 <!--suppress UnresolvedMavenProperty -->
