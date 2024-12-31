@@ -1,0 +1,7 @@
+###
+# this requires the authentication server up and running. The token can then be used in the beer and customer requests
+POST http://localhost:9000/oauth2/token
+Authorization: Basic messaging-client secret
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=client_credentials

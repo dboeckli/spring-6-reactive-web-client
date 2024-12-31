@@ -16,6 +16,25 @@ which does not require installed MongoDB instance
 Remark: The unit tests are disabled because they require that the backend is up and running. Locally those tests requires that you have started the backend. This requirement
 is currently not possible in the github pipeline and the build would fail there.
 
+```plaintext
++---------+               +----------------+               +--------------------+
+| Client  |               | Gateway Server |               | Authentication     |
+| (makes  |  -----------> | (Port 8080)    |  -----------> | Server (Port 9000) |
+| request)|  <----------- |                |  <----------- | (returns token)    |
++---------+               +----------------+               +--------------------+
+                                |   ^  
+                                |   |
+                                v   |
+                           +-------------------+               
+                           | Reactive-Mongo    |
+                           | (Port 8083)       |
+                           | (Executes         |
+                           | query and         |
+                           | creates           |
+                           | response)         |
+                           +-------------------+
+```
+
 ## Spring Framework Guru Course
 This repository has examples from my course [Reactive Programming with Spring Framework 5](https://www.udemy.com/reactive-programming-with-spring-framework-5/?couponCode=GITHUB_REPO_SF5B2G)
 

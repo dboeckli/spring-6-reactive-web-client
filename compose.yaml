@@ -1,0 +1,41 @@
+services:
+  mongodb:
+    image: 'mongo:8.0.3'
+    environment:
+      - 'MONGO_INITDB_DATABASE=sfg'
+      - 'MONGO_INITDB_ROOT_USERNAME=root'
+      - 'MONGO_INITDB_ROOT_PASSWORD=secret'
+    ports:
+      - '27017:27017'
+    expose:
+      - 27017
+  auth-server:
+    container_name: auth-server
+    image: domboeckli/spring-6-auth-server:0.0.1-SNAPSHOT
+    ports:
+      - "9000:9000"
+    expose:
+      - 9000
+    environment:
+      SPRING_SECURITY_OAUTH2_AUTHORIZATION_SERVER_ISSUER: http://auth-server:9000
+  reactive-mongo:
+    container_name: reactive-mongo
+    image: domboeckli/spring-6-reactive-mongo:0.0.1-SNAPSHOT
+    ports:
+      - "8083:8083"
+    expose:
+      - 8081
+    environment:
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://auth-server:9000
+      SERVER_PORT: 8083
+      SPRING_DATA_MONGODB_URI: mongodb://mongo:27017/sfg
+      SPRING_DATA_MONGODB_DATABASE: sfg
+      SPRING_DATA_MONGODB_USERNAME: root
+      SPRING_DATA_MONGODB_PASSWORD: secret
+    depends_on:
+      mongodb:
+        condition: service_started
+        required: true       
+      auth-server:
+        condition: service_started
+        required: true 
