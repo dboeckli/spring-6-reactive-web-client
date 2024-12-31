@@ -2,14 +2,25 @@ package guru.springframework.spring6reactivewebclient.client;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import guru.springframework.spring6reactivewebclient.dto.BeerDto;
-import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.util.TestSocketUtils;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,14 +31,138 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
-@Log
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Testcontainers
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-@Disabled("TODO: all those tests are failing in the github pipeline, because the server part (project: spring-6-reactive-mongo) is not running. and it requires auth server as well.")
-class BeerClientImplTest {
-    
+@Tag("testcontainer")
+@Slf4j
+class BeerClientImplWithTestContainerIT {
+
+    final static int REST_REACTIVE_MONGO_PORT = TestSocketUtils.findAvailableTcpPort();
+    final static int AUTH_SERVER_PORT = TestSocketUtils.findAvailableTcpPort();
+    final static int REST_GATEWAY_PORT = TestSocketUtils.findAvailableTcpPort();
+
+    static final Network sharedNetwork = Network.newNetwork();
+
+    @Container
+    // The MongoDBContainer provided by monto testcontainer does not work with user env variables: 
+    // See: https://github.com/testcontainers/testcontainers-java/issues/4695
+    static GenericContainer<?> mongoDBContainer = new GenericContainer<>("mongo:8.0.3")
+        .withNetworkAliases("mongo")
+        .withNetwork(sharedNetwork)
+        .withExposedPorts(27017)
+
+        .withEnv("MONGO_INITDB_DATABASE", "sfg")
+        .withEnv("MONGO_INITDB_ROOT_USERNAME", "root")
+        .withEnv("MONGO_INITDB_ROOT_PASSWORD", "secret")
+
+        .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("mongo")))
+
+        .waitingFor(Wait.forLogMessage(".*Waiting for connections.*", 1)
+            .withStartupTimeout(Duration.ofSeconds(60)));
+ 
+    @Container
+    static GenericContainer<?> authServer = new GenericContainer<>("domboeckli/spring-6-auth-server:0.0.1-SNAPSHOT")
+        .withNetworkAliases("auth-server")
+        .withNetwork(sharedNetwork)
+
+        .withEnv("SERVER_PORT", String.valueOf(AUTH_SERVER_PORT))
+        .withEnv("SPRING_SECURITY_OAUTH2_AUTHORIZATION_SERVER_ISSUER", "http://auth-server:" + AUTH_SERVER_PORT)
+
+        .withExposedPorts(AUTH_SERVER_PORT)
+        .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("auth-server")))
+        .waitingFor(Wait.forHttp("/actuator/health/readiness")
+            .forStatusCode(200)
+            .forResponsePredicate(response ->
+                response.contains("\"status\":\"UP\"")
+            )
+        );
+
+    @Container
+    static GenericContainer<?> restReactiveMongo = new GenericContainer<>("domboeckli/spring-6-reactive-mongo:0.0.1-SNAPSHOT")
+        .withNetworkAliases("reactive-mongo")
+        .withExposedPorts(REST_REACTIVE_MONGO_PORT)
+        .withNetwork(sharedNetwork)
+        
+        .withEnv("SERVER_PORT", String.valueOf(REST_REACTIVE_MONGO_PORT))
+        .withEnv("SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI", "http://auth-server:" + AUTH_SERVER_PORT)
+        .withEnv("SPRING_DATA_MONGODB_URI", "mongodb://mongo:27017/sfg")
+        .withEnv("SPRING_DATA_MONGODB_DATABASE", "sfg")
+        .withEnv("SPRING_DATA_MONGODB_USERNAME", "root")
+        .withEnv("SPRING_DATA_MONGODB_PASSWORD", "secret")
+        
+        .dependsOn(mongoDBContainer, authServer)
+        .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("reactive-mongo")))
+        .waitingFor(Wait.forHttp("/actuator/health/readiness")
+            .forStatusCode(200)
+            .forResponsePredicate(response ->
+                response.contains("\"status\":\"UP\"")
+            )
+        );
+
+    @Container
+    static GenericContainer<?> restGateway = new GenericContainer<>("domboeckli/spring-6-gateway:0.0.1-SNAPSHOT")
+        .withExposedPorts(REST_GATEWAY_PORT)
+        .withNetwork(sharedNetwork)
+        
+        .withEnv("SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI", "http://auth-server:" + AUTH_SERVER_PORT)
+        .withEnv("SERVER_PORT", String.valueOf(REST_GATEWAY_PORT))
+        .withEnv("SPRING_PROFILES_ACTIVE", "docker")
+
+        // Route for spring-6-reactive-mongo
+        .withEnv("SPRING_CLOUD_GATEWAY_ROUTES[0]_ID", "mvc_route")
+        .withEnv("SPRING_CLOUD_GATEWAY_ROUTES[0]_URI", "http://reactive-mongo:" + REST_REACTIVE_MONGO_PORT)
+        .withEnv("SPRING_CLOUD_GATEWAY_ROUTES[0]_PREDICATES[0]", "Path=/api/v3/**")
+
+        // Route for spring-6-auth-server
+        .withEnv("SPRING_CLOUD_GATEWAY_ROUTES[1]_ID", "auth_route")
+        .withEnv("SPRING_CLOUD_GATEWAY_ROUTES[1]_URI", "http://auth-server:" + AUTH_SERVER_PORT)
+        .withEnv("SPRING_CLOUD_GATEWAY_ROUTES[1]_PREDICATES[0]", "Path=/oauth2/**")
+
+        .withEnv("LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD_GATEWAY", "INFO") // SET TRACE for detailed logs
+        .withEnv("LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_HTTP_SERVER_REACTIVE", "INFO") // SET DEBUG for detailed logs  
+        .withEnv("LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB_REACTIVE", "INFO") // SET DEBUG for detailed logs
+        .withEnv("LOGGING_LEVEL_REACTOR_IPC_NETTY", "INFO") // SET DEBUG for detailed logs
+        .withEnv("LOGGING_LEVEL_REACTOR_NETTY", "INFO") // SET DEBUG for detailed logs
+        .withEnv("LOGGING_LEVEL_ORG_ZALANDO_LOGBOOK", "TRACE") // SET TRACE for detailed logs
+
+        .dependsOn(authServer, restReactiveMongo)
+        .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("gateway")))
+        .waitingFor(Wait.forHttp("/actuator/health/readiness")
+            .forStatusCode(200)
+            .forResponsePredicate(response ->
+                response.contains("\"status\":\"UP\"")
+            )
+        );
+
     @Autowired
     BeerClient beerClient;
+
+    @DynamicPropertySource
+    static void properties(DynamicPropertyRegistry registry) {
+        String gatewayServerUrl = "http://" + restGateway.getHost() + ":" + restGateway.getFirstMappedPort();
+        log.info("### Rest Gateway Server URL: " + gatewayServerUrl);
+        registry.add("webclient.rooturl", () -> gatewayServerUrl);
+
+        String authServerAuthorizationUrl = "http://" + authServer.getHost() + ":" + authServer.getFirstMappedPort() + "/auth2/authorize";
+        log.info("### AuthServer Authorization Url: " + authServerAuthorizationUrl);
+        registry.add("spring.security.oauth2.client.provider.springauth.authorization-uri", () -> authServerAuthorizationUrl);
+
+        String authServerTokenUrl = "http://" + authServer.getHost() + ":" + authServer.getFirstMappedPort() + "/oauth2/token";
+        log.info("### Auth Server Token Url: " + authServerTokenUrl);
+        registry.add("spring.security.oauth2.client.provider.springauth.token-uri", () -> authServerTokenUrl);
+
+        String issuerUrl = "http://auth-server:" + AUTH_SERVER_PORT;
+        log.info("### Issuer Url: " + issuerUrl);
+        registry.add("spring.security.oauth2.resourceserver.jwt.issuer-uri", () -> issuerUrl);
+    }
+
+    @BeforeAll
+    static void setUp() {
+        log.info("#### auth server listening on port {} and host: {} and port {}", AUTH_SERVER_PORT, authServer.getHost(), authServer.getFirstMappedPort());
+        log.info("#### gateway server  listening on port {} and host: {} and port {}", REST_GATEWAY_PORT, restGateway.getHost(), restGateway.getFirstMappedPort());
+        log.info("#### reactive-mongo server listening on port {} and host: {} and port {}", REST_REACTIVE_MONGO_PORT, restReactiveMongo.getHost(), restReactiveMongo.getFirstMappedPort());
+    }
 
     @Test
     @Order(0)
@@ -47,7 +182,7 @@ class BeerClientImplTest {
         assertTrue(atomicBoolean.get());
         assertEquals(2, beerResponse.get().size());
     }
-    
+
     @Test
     @Order(0)
     void testGetBeerById() {
@@ -87,7 +222,7 @@ class BeerClientImplTest {
     void listBeerMap() {
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
         AtomicReference<List<Map>> beerListResponse = new AtomicReference<>(new ArrayList<>());
-        
+
         beerClient.listBeerMap().subscribe(response -> {
             log.info("### Response: " + response);
             beerListResponse.get().add(response);
@@ -106,7 +241,7 @@ class BeerClientImplTest {
     void testListBeerJsonNode() {
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
         AtomicReference<List<JsonNode>> beerListResponse = new AtomicReference<>(new ArrayList<>());
-        
+
         beerClient.listBeerJsonNode().subscribe(response -> {
             log.info("### Response: " + response);
             beerListResponse.get().add(response);
@@ -125,7 +260,7 @@ class BeerClientImplTest {
     void testListBeerAsDtos() {
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
         AtomicReference<List<BeerDto>> beerListResponse = new AtomicReference<>(new ArrayList<>());
-        
+
         beerClient.listBeerAsDtos().subscribe(response -> {
             log.info("### Response: " + response);
             beerListResponse.get().add(response);
@@ -172,7 +307,7 @@ class BeerClientImplTest {
     void updateBeer() {
         BeerDto beerToUpdate = beerClient.listBeerAsDtos().blockFirst();
         beerToUpdate.setBeerName("Updated Beer");
-        
+
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
         AtomicReference<BeerDto> updatedBeer = new AtomicReference<>();
 
@@ -241,7 +376,7 @@ class BeerClientImplTest {
             .subscribe();
 
         await().untilTrue(atomicBoolean);
-        
+
         try {
             beerClient.getBeerById(beerToDelete.get().getId()).block();
             fail("Beer not deleted");
