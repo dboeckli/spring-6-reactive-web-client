@@ -24,6 +24,12 @@ logging:
 spring:
   application:
     name: spring-6-reactive-web-client  
+    
+  docker:
+    compose:
+      enabled: true
+      stop:
+        command: down  
   
   security:
     oauth2:
