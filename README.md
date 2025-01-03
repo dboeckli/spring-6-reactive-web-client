@@ -29,3 +29,14 @@ that interacts with MongoDB, showcasing how to handle asynchronous data streams 
                            | response)         |
                            +-------------------+
 ```
+
+## Web Interface
+
+This application includes a web interface that allows users to interact with the beer data through a browser. The web interface provides the following features:
+
+- View a paginated list of beers
+- Navigate through pages of beer listings
+- View details of individual beers
+
+To access the web interface, start the application and navigate to: http://localhost:8087/beers
+

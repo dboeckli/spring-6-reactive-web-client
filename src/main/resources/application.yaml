@@ -47,7 +47,7 @@ spring:
             token-uri: http://localhost:9000/oauth2/token
 
 webclient:
-  rooturl: http://localhost:8080
+  rooturl: http://localhost:8083
   
 logbook:
   filter:
