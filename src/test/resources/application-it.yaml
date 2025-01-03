@@ -1,0 +1,68 @@
+server:
+  port : 8087
+  
+management:
+  health:
+    readinessstate:
+      enabled: true
+    livenessstate:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always  
+  
+logging:
+  level:
+    org.zalando.logbook: TRACE  
+
+spring:
+  application:
+    name: spring-6-reactive-web-client  
+    
+  docker:
+    compose:
+      enabled: true
+      stop:
+        command: down  
+      skip:
+        in-tests: false  
+  
+  security:
+    oauth2:
+      client:
+        registration:
+          springauth:
+            client-name: springauth
+            client-id: messaging-client
+            client-secret: secret
+            scope[0]: message.read
+            scope[1]: message.write
+            authorization-grant-type: client_credentials   
+        provider:
+          springauth:
+            token-uri: http://localhost:9000/oauth2/token
+
+webclient:
+  rooturl: http://localhost:8083
+  
+logbook:
+  filter:
+    enabled: true
+  format:
+    style: http
+  obfuscate:
+    headers:
+      - Authorization
+      - X-Secret
+    parameters:
+      - access_token
+      - password
+  predicate:
+    exclude:
+      - path: /actuator/health   
