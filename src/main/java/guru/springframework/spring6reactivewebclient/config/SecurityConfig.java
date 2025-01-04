@@ -39,6 +39,10 @@ public class SecurityConfig {
             .csrf(ServerHttpSecurity.CsrfSpec::disable)
             .authorizeExchange(exchanges -> exchanges
                 .matchers(EndpointRequest.toAnyEndpoint()).permitAll()   // permit all actuator endpoints
+                .pathMatchers("/beers/**").permitAll()
+                .pathMatchers("/beer/**").permitAll()
+                .pathMatchers("/webjars/**").permitAll()
+                .pathMatchers("/favicon.ico").permitAll()
                 .anyExchange().authenticated()
             )
             .build();
