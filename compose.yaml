@@ -9,6 +9,12 @@ services:
       - '27017:27017'
     expose:
       - 27017
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
   auth-server:
     container_name: auth-server
     image: domboeckli/spring-6-auth-server:0.0.1-SNAPSHOT
@@ -34,7 +40,7 @@ services:
       SPRING_DATA_MONGODB_PASSWORD: secret
     depends_on:
       mongodb:
-        condition: service_started
+        condition: service_healthy
         required: true       
       auth-server:
         condition: service_started
