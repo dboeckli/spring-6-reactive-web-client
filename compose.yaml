@@ -15,6 +15,7 @@ services:
       timeout: 5s
       retries: 5
       start_period: 40s
+      
   auth-server:
     container_name: auth-server
     image: domboeckli/spring-6-auth-server:0.0.2-SNAPSHOT
@@ -24,6 +25,7 @@ services:
       - 9000
     environment:
       SPRING_SECURITY_OAUTH2_AUTHORIZATION_SERVER_ISSUER: http://auth-server:9000
+      
   reactive-mongo:
     container_name: reactive-mongo
     image: domboeckli/spring-6-reactive-mongo:0.0.1-SNAPSHOT
@@ -45,6 +47,7 @@ services:
       auth-server:
         condition: service_started
         required: true 
+        
   gateway:
     container_name: gateway
     image: domboeckli/spring-6-gateway:0.0.1-SNAPSHOT
@@ -70,4 +73,48 @@ services:
         required: true
       reactive-mongo:
         condition: service_started
-        required: true      
+        required: true
+          
+  busybox:
+    image: busybox:1.37.0
+    container_name: busybox
+    depends_on:
+      auth-server:
+        condition: service_started
+        required: true
+      reactive-mongo:
+        condition: service_started
+        required: true
+      gateway:
+        condition: service_started
+        required: true
+    healthcheck:
+      test: [ "CMD", "sh", "-c", "
+            echo 'Checking BusyBox readiness...' &&
+            test -f /bin/sh &&
+            wget -qO- http://auth-server:9000/actuator/health/readiness | grep -q '\"status\":\"UP\"' &&
+            wget -qO- http://reactive-mongo:8083/actuator/health/readiness | grep -q '\"status\":\"UP\"' &&
+            wget -qO- http://gateway:8080/actuator/health/readiness | grep -q '\"status\":\"UP\"'
+          " ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: >
+      /bin/sh -c '
+      while true; do
+        auth_health=$$(wget -q -O - http://auth-server:9000/actuator/health/readiness 2>/dev/null)
+        reactive_mongo_health=$$(wget -q -O - http://reactive-mongo:8083/actuator/health/readiness 2>/dev/null)
+        gateway_health=$$(wget -q -O - http://gateway:8080/actuator/health/readiness 2>/dev/null)
+
+        echo "{
+          \"timestamp\": \"$$(date -Iseconds)\",
+          \"services\": {
+            \"auth-server\": $$auth_health,
+            \"reactive-mongo\": $$reactive_mongo_health,
+            \"gateway\": $$gateway_health
+          }
+        }"
+
+        sleep 10
+      done
+      '              
