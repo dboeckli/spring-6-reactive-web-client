@@ -50,7 +50,7 @@ services:
         
   gateway:
     container_name: gateway
-    image: domboeckli/spring-6-gateway:0.0.1-SNAPSHOT
+    image: domboeckli/spring-6-gateway:0.0.2-SNAPSHOT
     expose:
       - 8080
     ports:
