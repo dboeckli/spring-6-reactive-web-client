@@ -19,7 +19,7 @@ public class WebClientConfig implements WebClientCustomizer {
     
     private final ReactiveOAuth2AuthorizedClientManager authorizedClientManager;
 
-    public WebClientConfig(@Value("${webclient.rooturl}") String rootUrl, ReactiveOAuth2AuthorizedClientManager authorizedClientManager) {
+    public WebClientConfig(@Value("${webclient.reactive-mongo-url}") String rootUrl, ReactiveOAuth2AuthorizedClientManager authorizedClientManager) {
         this.rootUrl = rootUrl;
         this.authorizedClientManager = authorizedClientManager;
     }

@@ -12,6 +12,13 @@ management:
       exposure:
         include: "*"
   endpoint:
+    configprops:
+      # WARNING: SECURITY RISK - DO NOT USE IN PRODUCTION ENVIRONMENT
+      # This configuration exposes sensitive data and should only be used for development or testing purposes.
+      # Ensure this is disabled in any environment where security is a concern.
+      show-values: ALWAYS
+    env:
+      show-values: always
     health:
       probes:
         enabled: true
@@ -46,9 +53,6 @@ spring:
           springauth:
             token-uri: http://localhost:9000/oauth2/token
 
-webclient:
-  rooturl: http://localhost:8083
-  
 logbook:
   filter:
     enabled: true
@@ -63,4 +67,21 @@ logbook:
       - password
   predicate:
     exclude:
-      - path: /actuator/health   
+      # Exclude HTML-related calls and specific endpoints that Logbook doesn't handle correctly
+      - path: /actuator/health/**
+      - path: /h2-console/**  # Exclude H2 console
+      - path: /swagger-ui/**  # Exclude Swagger UI if used
+      - path: /v3/api-docs/** # Exclude OpenAPI docs if used
+      - path: /favicon.ico
+      - path: /beers
+      - path: /beers/**
+      - path: /beer
+      - path: /beer/**
+      - path: /webjars/**
+        # Add more exclusions as needed
+
+security:
+  auth-server-health-url: http://localhost:9000
+
+webclient:
+  reactive-mongo-url: http://localhost:8083

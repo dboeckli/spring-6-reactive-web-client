@@ -48,9 +48,6 @@ spring:
           springauth:
             token-uri: http://localhost:9000/oauth2/token
 
-webclient:
-  rooturl: http://localhost:8083
-  
 logbook:
   filter:
     enabled: true
@@ -65,4 +62,10 @@ logbook:
       - password
   predicate:
     exclude:
-      - path: /actuator/health   
+      - path: /actuator/health
+
+security:
+  auth-server-health-url: http://localhost:9000
+
+webclient:
+  reactive-mongo-url: http://localhost:8083
