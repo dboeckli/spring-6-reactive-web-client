@@ -2,7 +2,7 @@ global:
   timezone: Europe/Zurich
   timezonePath: /etc/localtime
   springDebug: false
-  namespace: spring-6-restclient
+  namespace: spring-6-reactive-web-client
 
 replicaCount: 1
 
@@ -12,9 +12,9 @@ image:
 
 service:
   type: NodePort
-  port: 8085
-  targetPort: 8085
-  nodePort: 30085
+  port: 8087
+  targetPort: 8087
+  nodePort: 30087
 
 externalAccess:
   host: "localhost"
@@ -42,16 +42,9 @@ probes:
     failureThreshold: 6
 
 mongodb:
-  database: restmvcdb
-
   port: 27017
   targetPort: 27017
   nodePort: 30017
-
-  user: restadmin
-  password: password
-
-  rootPassword: verysecret
 
 authServer:
   port: 9000
@@ -71,13 +64,13 @@ ingress:
 spring-6-auth-server:
   spring:
     issuer:
-      uri: "http://spring-6-restclient-spring-6-auth-server.spring-6-restclient.svc.cluster.local:9000"
+      uri: "http://spring-6-reactive-web-client-spring-6-auth-server.spring-6-reactive-web-client.svc.cluster.local:9000"
 
 spring-6-reactive-mongo:
   authServer:
     enabled: false
-  mongodb: # TODO: ADD THIS TO REACTIVE MONGO PROJECT
+  mongodb:
     enabled: false
   spring:
     oauth2ResourceServer:
-      issuerUri: "http://spring-6-restclient-spring-6-auth-server.spring-6-restclient.svc.cluster.local:9000"
+      issuerUri: "http://spring-6-reactive-web-client-spring-6-auth-server.spring-6-reactive-web-client.svc.cluster.local:9000"

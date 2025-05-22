@@ -35,11 +35,9 @@ spec:
 
             - name: SECURITY_AUTH_SERVER_HEALTH_URL
               value: "http://{{ .Release.Name }}-spring-6-auth-server.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.authServer.port }}"
-            - name: REST_MVCURL
+            - name: WEBCLIENT_REACTIVE_MONGO_URL
               value: "http://{{ .Release.Name }}-spring-6-reactive-mongo.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.reactiveMongo.port }}"
-            # no gateway here. we go directly to the mvc server
-            - name: REST_GATEWAYURL
-              value: "http://{{ .Release.Name }}-spring-6-reactive-mongo.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.reactiveMongo.port }}"
+
             - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI
               value: "http://{{ .Release.Name }}-spring-6-auth-server.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.authServer.port }}"
             - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_SPRINGAUTH_AUTHORIZATION_URI
