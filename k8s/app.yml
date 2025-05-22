@@ -6,9 +6,9 @@ metadata:
 spec:
   type: NodePort
   ports:
-    - port: 8085
-      targetPort: 8085
-      nodePort: 30085
+    - port: 8087
+      targetPort: 8087
+      nodePort: 30087
   selector:
     app: @project.artifactId@
 
@@ -33,9 +33,9 @@ spec:
         - name: wait-for-auth-server
           image: busybox:1.37.0
           command: [ 'sh', '-c', 'until nc -z auth-server 9000; do echo "[busybox: wait-for-auth-server] waiting for auth-server"; sleep 2; done; echo "[busybox: wait-for-auth-server] auth-server is available"' ]
-        - name: wait-for-rest-mvc
+        - name: wait-for-reactive-mongo
           image: busybox:1.37.0
-          command: [ 'sh', '-c', 'until nc -z rest-mvc 8081; do echo "[busybox: wait-for-rest-mvc] waiting for rest-mvc"; sleep 2; done; echo "[busybox: wait-for-rest-mvc] rest-mvc is available"' ]
+          command: [ 'sh', '-c', 'until nc -z reactive-mongo 8083; do echo "[busybox: wait-for-reactive-mongo] waiting for reactive-mongo"; sleep 2; done; echo "[busybox: wait-for-reactive-mongo] reactive-mongo is available"' ]
 
       containers:
         - name: @project.artifactId@
@@ -47,15 +47,15 @@ spec:
               value: "http://auth-server:9000/oauth2/authorize"
             - name: SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_SPRINGAUTH_TOKEN_URI
               value: "http://auth-server:9000/oauth2/token"
+
             - name: SECURITY_AUTH_SERVER_HEALTH_URL
               value: "http://auth-server:9000"
-            - name: REST_MVCURL
-              value: "http://rest-mvc:8081"
-            - name: REST_GATEWAYURL
-              value: "http://rest-mvc:8081"  # no gateway here. we go directly to the mvc server
+
+            - name: WEBCLIENT_REACTIVE_MONGO_URL
+              value: "http://reactive-mongo:8083"
           ports:
             - name: http
-              containerPort: 8085
+              containerPort: 8087
           startupProbe:
             httpGet:
               path: /actuator/health

@@ -5,7 +5,7 @@ Authorization: Bearer {{$auth.token("auth-id")}}
 
 Content-Type: application/json
 
-### List Beers via gateway. retrieve bearer token via gateway
+### List Beers via gateway. retrieve bearer token via gateway. does not work when running in kubenertes.
 GET http://localhost:{{gateway-port}}/api/v3/beer
 Accept: application/json
 Authorization: Bearer {{$auth.token("auth-id")}}

@@ -35,7 +35,7 @@ spec:
           command: [ 'sh', '-c', 'until nc -z mongodb 27017; do echo "[busybox: wait-for-mongodb] waiting for mongodb"; sleep 2; done; echo "[busybox: wait-for-mongodb] mongodb is available"' ]
       containers:
         - name: reactive-mongo
-          image: domboeckli/reactive-mongo:0.0.1-SNAPSHOT
+          image: domboeckli/spring-6-reactive-mongo:0.0.1-SNAPSHOT
           env:
             - name: SPRING_DATA_MONGODB_HOST
               value: "mongodb"
