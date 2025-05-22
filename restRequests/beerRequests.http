@@ -1,5 +1,5 @@
 ### List Beers directly
-GET http://localhost:{{application-port}}/api/v3/beer
+GET http://localhost:{{reactive-mongo-port}}/api/v3/beer
 Accept: application/json
 Authorization: Bearer {{$auth.token("auth-id")}}
 
@@ -13,13 +13,13 @@ Authorization: Bearer {{$auth.token("auth-id")}}
 Content-Type: application/json
 
 ### Get Beer by ID
-GET http://localhost:{{application-port}}/api/v3/beer/6746d967f74ca306eaa56db3
+GET http://localhost:{{reactive-mongo-port}}/api/v3/beer/6746d967f74ca306eaa56db3
 Accept: application/json
 Authorization: Bearer {{$auth.token("auth-id")}}
 Content-Type: application/json
 
 ### Create Beer
-POST http://localhost:{{application-port}}/api/v3/beer
+POST http://localhost:{{reactive-mongo-port}}/api/v3/beer
 Accept: application/json
 Authorization: Bearer {{$auth.token("auth-id")}}
 Content-Type: application/json
@@ -33,7 +33,7 @@ Content-Type: application/json
 }
 
 ### Create Beer returns BAD REQUEST, beerName is to short
-POST http://localhost:{{application-port}}/api/v3/beer
+POST http://localhost:{{reactive-mongo-port}}/api/v3/beer
 Accept: application/json
 Authorization: Bearer {{$auth.token("auth-id")}}
 Content-Type: application/json
@@ -47,7 +47,7 @@ Content-Type: application/json
 }
 
 ### Update Beer by ID
-PUT http://localhost:{{application-port}}/api/v3/beer/673b82a22082c509d439c02d
+PUT http://localhost:{{reactive-mongo-port}}/api/v3/beer/673b82a22082c509d439c02d
 Accept: application/json
 Authorization: Bearer {{$auth.token("auth-id")}}
 Content-Type: application/json
@@ -61,7 +61,7 @@ Content-Type: application/json
 }
 
 ### Update Beer by ID returns BAD REQUEST, beerStyle is empty
-PUT http://localhost:{{application-port}}/api/v3/beer/1
+PUT http://localhost:{{reactive-mongo-port}}/api/v3/beer/1
 Accept: application/json
 Authorization: Bearer {{$auth.token("auth-id")}}
 Content-Type: application/json
@@ -75,7 +75,7 @@ Content-Type: application/json
 }
 
 ### Patch Beer by ID
-PUT http://localhost:{{application-port}}/api/v3/beer/1
+PUT http://localhost:{{reactive-mongo-port}}/api/v3/beer/1
 Accept: application/json
 Authorization: Bearer {{$auth.token("auth-id")}}
 Content-Type: application/json
@@ -89,7 +89,7 @@ Content-Type: application/json
 }
 
 ### Patch Beer by ID. Beername is missing
-PUT http://localhost:{{application-port}}/api/v3/beer/1
+PUT http://localhost:{{reactive-mongo-port}}/api/v3/beer/1
 Accept: application/json
 Authorization: Bearer {{$auth.token("auth-id")}}
 Content-Type: application/json
@@ -102,6 +102,6 @@ Content-Type: application/json
 }
 
 ### Delete Beer by ID
-DELETE http://localhost:{{application-port}}/api/v3/beer/6746d967f74ca306eaa56db0
+DELETE http://localhost:{{reactive-mongo-port}}/api/v3/beer/6746d967f74ca306eaa56db0
 Accept: application/json
 Authorization: Bearer {{$auth.token("auth-id")}}

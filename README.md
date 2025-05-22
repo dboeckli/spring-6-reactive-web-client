@@ -38,5 +38,7 @@ This application includes a web interface that allows users to interact with the
 - Navigate through pages of beer listings
 - View details of individual beers
 
-To access the web interface, start the application and navigate to: http://localhost:8087/beers
+To access the web interface, start the application and navigate to: 
+- http://localhost:8087/beers
+- http://localhost:30087/beers
 
