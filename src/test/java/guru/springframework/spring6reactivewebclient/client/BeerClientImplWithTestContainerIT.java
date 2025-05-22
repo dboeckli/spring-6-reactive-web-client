@@ -370,9 +370,7 @@ class BeerClientImplWithTestContainerIT {
                 beerToDelete.set(dto);
                 return beerClient.deleteBeer(dto.getId());
             })
-            .doOnSuccess(mt -> {
-                atomicBoolean.set(true);
-            })
+            .doOnSuccess(mt -> atomicBoolean.set(true))
             .subscribe();
 
         await().untilTrue(atomicBoolean);

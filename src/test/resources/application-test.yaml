@@ -1,0 +1,84 @@
+management:
+  health:
+    readinessstate:
+      enabled: true
+    livenessstate:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    configprops:
+      # WARNING: SECURITY RISK - DO NOT USE IN PRODUCTION ENVIRONMENT
+      # This configuration exposes sensitive data and should only be used for development or testing purposes.
+      # Ensure this is disabled in any environment where security is a concern.
+      show-values: ALWAYS
+    env:
+      show-values: always
+    health:
+      probes:
+        enabled: true
+      show-details: always  
+  
+logging:
+  level:
+    org.zalando.logbook: TRACE  
+
+spring:
+  application:
+    name: spring-6-reactive-web-client  
+    
+  docker:
+    compose:
+      enabled: false
+      stop:
+        command: down  
+  
+  security:
+    oauth2:
+      client:
+        registration:
+          springauth:
+            client-name: springauth
+            client-id: messaging-client
+            client-secret: secret
+            scope[0]: message.read
+            scope[1]: message.write
+            authorization-grant-type: client_credentials   
+        provider:
+          springauth:
+            token-uri: http://localhost:9000/oauth2/token
+
+logbook:
+  filter:
+    enabled: true
+  format:
+    style: http
+  obfuscate:
+    headers:
+      - Authorization
+      - X-Secret
+    parameters:
+      - access_token
+      - password
+  predicate:
+    exclude:
+      # Exclude HTML-related calls and specific endpoints that Logbook doesn't handle correctly
+      - path: /actuator/health/**
+      - path: /h2-console/**  # Exclude H2 console
+      - path: /swagger-ui/**  # Exclude Swagger UI if used
+      - path: /v3/api-docs/** # Exclude OpenAPI docs if used
+      - path: /favicon.ico
+      - path: /beers
+      - path: /beers/**
+      - path: /beer
+      - path: /beer/**
+      - path: /webjars/**
+        # Add more exclusions as needed
+
+security:
+  auth-server-health-url: http://localhost:9000
+
+webclient:
+  reactive-mongo-url: http://localhost:8083
