@@ -38,16 +38,23 @@ import static org.junit.jupiter.api.Assertions.*;
 @Slf4j
 class BeerClientImplWithTestContainerIT {
 
-    final static int REST_REACTIVE_MONGO_PORT = TestSocketUtils.findAvailableTcpPort();
-    final static int AUTH_SERVER_PORT = TestSocketUtils.findAvailableTcpPort();
-    final static int REST_GATEWAY_PORT = TestSocketUtils.findAvailableTcpPort();
+    private static final String DOCKER_IMAGE_PREFIX = "domboeckli";
+
+    private static final String MONGO_VERSION = "8.0.9";
+    private static final String AUTH_SERVER_VERSION = "0.0.4-SNAPSHOT";
+    private static final String REACTIVE_MONGO_VERSION = "0.0.1-SNAPSHOT";
+    private static final String GATEWAY_VERSION = "0.0.2-SNAPSHOT";
+
+    static final int REST_REACTIVE_MONGO_PORT = TestSocketUtils.findAvailableTcpPort();
+    static final int AUTH_SERVER_PORT = TestSocketUtils.findAvailableTcpPort();
+    static final int REST_GATEWAY_PORT = TestSocketUtils.findAvailableTcpPort();
 
     static final Network sharedNetwork = Network.newNetwork();
 
     @Container
     // The MongoDBContainer provided by monto testcontainer does not work with user env variables: 
     // See: https://github.com/testcontainers/testcontainers-java/issues/4695
-    static GenericContainer<?> mongoDBContainer = new GenericContainer<>("mongo:8.0.3")
+    static GenericContainer<?> mongoDBContainer = new GenericContainer<>("mongo:" + MONGO_VERSION)
         .withNetworkAliases("mongo")
         .withNetwork(sharedNetwork)
         .withExposedPorts(27017)
@@ -62,7 +69,7 @@ class BeerClientImplWithTestContainerIT {
             .withStartupTimeout(Duration.ofSeconds(60)));
  
     @Container
-    static GenericContainer<?> authServer = new GenericContainer<>("domboeckli/spring-6-auth-server:0.0.1-SNAPSHOT")
+    static GenericContainer<?> authServer = new GenericContainer<>(DOCKER_IMAGE_PREFIX + "/spring-6-auth-server:" + AUTH_SERVER_VERSION)
         .withNetworkAliases("auth-server")
         .withNetwork(sharedNetwork)
 
@@ -76,16 +83,28 @@ class BeerClientImplWithTestContainerIT {
             .forResponsePredicate(response ->
                 response.contains("\"status\":\"UP\"")
             )
+        )
+        .waitingFor(Wait.forHttp("/actuator/health")
+            .forStatusCode(200)
+            .forResponsePredicate(response -> {
+                log.info("####################################################################################");
+                log.info("Gateway /actuator/health/info response: {}", response);
+                log.info("####################################################################################");
+                return true;
+            })
         );
 
     @Container
-    static GenericContainer<?> restReactiveMongo = new GenericContainer<>("domboeckli/spring-6-reactive-mongo:0.0.1-SNAPSHOT")
+    static GenericContainer<?> restReactiveMongo = new GenericContainer<>(DOCKER_IMAGE_PREFIX + "/spring-6-reactive-mongo:" + REACTIVE_MONGO_VERSION)
         .withNetworkAliases("reactive-mongo")
         .withExposedPorts(REST_REACTIVE_MONGO_PORT)
         .withNetwork(sharedNetwork)
         
         .withEnv("SERVER_PORT", String.valueOf(REST_REACTIVE_MONGO_PORT))
+
         .withEnv("SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI", "http://auth-server:" + AUTH_SERVER_PORT)
+        .withEnv("SECURITY_AUTH_SERVER_HEALTH_URL", "http://auth-server:" + AUTH_SERVER_PORT)
+
         .withEnv("SPRING_DATA_MONGODB_URI", "mongodb://mongo:27017/sfg")
         .withEnv("SPRING_DATA_MONGODB_DATABASE", "sfg")
         .withEnv("SPRING_DATA_MONGODB_USERNAME", "root")
@@ -98,10 +117,19 @@ class BeerClientImplWithTestContainerIT {
             .forResponsePredicate(response ->
                 response.contains("\"status\":\"UP\"")
             )
+        )
+        .waitingFor(Wait.forHttp("/actuator/health")
+            .forStatusCode(200)
+            .forResponsePredicate(response -> {
+                log.info("####################################################################################");
+                log.info("Gateway /actuator/health/info response: {}", response);
+                log.info("####################################################################################");
+                return true;
+            })
         );
 
     @Container
-    static GenericContainer<?> restGateway = new GenericContainer<>("domboeckli/spring-6-gateway:0.0.1-SNAPSHOT")
+    static GenericContainer<?> restGateway = new GenericContainer<>(DOCKER_IMAGE_PREFIX + "/spring-6-gateway:" + GATEWAY_VERSION)
         .withExposedPorts(REST_GATEWAY_PORT)
         .withNetwork(sharedNetwork)
         
@@ -133,6 +161,15 @@ class BeerClientImplWithTestContainerIT {
             .forResponsePredicate(response ->
                 response.contains("\"status\":\"UP\"")
             )
+        )
+        .waitingFor(Wait.forHttp("/actuator/health")
+            .forStatusCode(200)
+            .forResponsePredicate(response -> {
+                log.info("####################################################################################");
+                log.info("Gateway /actuator/health/info response: {}", response);
+                log.info("####################################################################################");
+                return true;
+            })
         );
 
     @Autowired
@@ -142,7 +179,7 @@ class BeerClientImplWithTestContainerIT {
     static void properties(DynamicPropertyRegistry registry) {
         String gatewayServerUrl = "http://" + restGateway.getHost() + ":" + restGateway.getFirstMappedPort();
         log.info("### Rest Gateway Server URL: " + gatewayServerUrl);
-        registry.add("webclient.rooturl", () -> gatewayServerUrl);
+        registry.add("webclient.reactive-mongo-url", () -> gatewayServerUrl);
 
         String authServerAuthorizationUrl = "http://" + authServer.getHost() + ":" + authServer.getFirstMappedPort() + "/auth2/authorize";
         log.info("### AuthServer Authorization Url: " + authServerAuthorizationUrl);
@@ -219,9 +256,9 @@ class BeerClientImplWithTestContainerIT {
 
     @Test
     @Order(0)
-    void listBeerMap() {
+    void testListBeerMap() {
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
-        AtomicReference<List<Map>> beerListResponse = new AtomicReference<>(new ArrayList<>());
+        AtomicReference<List<Map<String, Object>>> beerListResponse = new AtomicReference<>(new ArrayList<>());
 
         beerClient.listBeerMap().subscribe(response -> {
             log.info("### Response: " + response);
@@ -370,9 +407,7 @@ class BeerClientImplWithTestContainerIT {
                 beerToDelete.set(dto);
                 return beerClient.deleteBeer(dto.getId());
             })
-            .doOnSuccess(mt -> {
-                atomicBoolean.set(true);
-            })
+            .doOnSuccess(mt -> atomicBoolean.set(true))
             .subscribe();
 
         await().untilTrue(atomicBoolean);

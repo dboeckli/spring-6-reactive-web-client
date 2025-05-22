@@ -1,19 +1,19 @@
 ### this retrieves the bearer token. use the token in the request below
-POST http://localhost:9000/oauth2/token
+POST http://localhost:{{auth-server-port}}/oauth2/token
 Authorization: Basic messaging-client secret
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=client_credentials&scope=message.read message.write
 
 ### this retrieves the bearer token via gateway. use the token in the request below
-POST http://localhost:8080/oauth2/token
+POST http://localhost:{{auth-server-port}}/oauth2/token
 Authorization: Basic messaging-client secret
 Content-Type: application/x-www-form-urlencoded
 
 grant_type=client_credentials&scope=message.read message.write
 
 ###
-GET http://localhost:9000/actuator/health/readiness
+GET http://localhost:{{auth-server-port}}/actuator/health/readiness
 Accept: application/json
 
 
