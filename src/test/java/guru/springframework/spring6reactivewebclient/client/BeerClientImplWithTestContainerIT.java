@@ -43,7 +43,7 @@ class BeerClientImplWithTestContainerIT {
     private static final String MONGO_VERSION = "8.0.9";
     private static final String AUTH_SERVER_VERSION = "0.0.4-SNAPSHOT";
     private static final String REACTIVE_MONGO_VERSION = "0.0.1-SNAPSHOT";
-    private static final String GATEWAY_VERSION = "0.0.2-SNAPSHOT";
+    private static final String GATEWAY_VERSION = "0.0.3-SNAPSHOT";
 
     static final int REST_REACTIVE_MONGO_PORT = TestSocketUtils.findAvailableTcpPort();
     static final int AUTH_SERVER_PORT = TestSocketUtils.findAvailableTcpPort();
