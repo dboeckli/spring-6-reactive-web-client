@@ -62,9 +62,9 @@ services:
 
       SECURITY_AUTH_SERVER_HEALTH_URL: http://auth-server:9000
       SECURITY_REACTIVEMONGO_HEALTH_URL: http://reactive-mongo:8083
-      SECURITY_MVC_HEALTH_URL: http://reactive-mongo:8083
-      SECURITY_REACTIVE_HEALTH_URL: http://reactive-mongo:8083
-      SECURITY_DATAREST_HEALTH_URL: http://reactive-mongo:8083
+      SECURITY_MVC_HEALTH_URL: http://reactive-mongo:8083 # by intention, we are the reactive-mongo route. This is a workaround to get up status
+      SECURITY_REACTIVE_HEALTH_URL: http://reactive-mongo:8083 # by intention, we are the reactive-mongo route. This is a workaround to get up status
+      SECURITY_DATAREST_HEALTH_URL: http://reactive-mongo:8083 # by intention, we are the reactive-mongo route. This is a workaround to get up status
 
       SECURITY_AUTHORIZATION_URL_FOR_OPENAPI: http://localhost:9000/oauth2/auth
       SECURITY_TOKEN_URL_FOR_OPENAPI: https://localhost:9000/oauth2/token
