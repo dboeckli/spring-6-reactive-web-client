@@ -135,17 +135,22 @@ class BeerClientImplWithTestContainerIT {
         
         .withEnv("SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI", "http://auth-server:" + AUTH_SERVER_PORT)
         .withEnv("SERVER_PORT", String.valueOf(REST_GATEWAY_PORT))
-        .withEnv("SPRING_PROFILES_ACTIVE", "docker")
+
+        .withEnv("SECURITY_AUTH_SERVER_HEALTH_URL", "http://auth-server:" + AUTH_SERVER_PORT)
+        .withEnv("SECURITY_REACTIVEMONGO_HEALTH_URL", "http://reactive-mongo:" + REST_REACTIVE_MONGO_PORT)
+        .withEnv("SECURITY_MVC_HEALTH_URL", "http://reactive-mongo:" + REST_REACTIVE_MONGO_PORT) // by intention, we are the reactive-mongo route. This is a workaround to get up status
+        .withEnv("SECURITY_REACTIVE_HEALTH_URL", "http://reactive-mongo:" + REST_REACTIVE_MONGO_PORT) // by intention, we are the reactive-mongo route. This is a workaround to get up status
+        .withEnv("SECURITY_DATAREST_HEALTH_URL", "http://reactive-mongo:" + REST_REACTIVE_MONGO_PORT) // by intention, we are the reactive-mongo route. This is a workaround to get up status
 
         // Route for spring-6-reactive-mongo
-        .withEnv("SPRING_CLOUD_GATEWAY_ROUTES[0]_ID", "mvc_route")
-        .withEnv("SPRING_CLOUD_GATEWAY_ROUTES[0]_URI", "http://reactive-mongo:" + REST_REACTIVE_MONGO_PORT)
-        .withEnv("SPRING_CLOUD_GATEWAY_ROUTES[0]_PREDICATES[0]", "Path=/api/v3/**")
+        .withEnv("SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES[0]_ID", "mvc_route")
+        .withEnv("SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES[0]_URI", "http://reactive-mongo:" + REST_REACTIVE_MONGO_PORT)
+        .withEnv("SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES[0]_PREDICATES[0]", "Path=/api/v3/**")
 
         // Route for spring-6-auth-server
-        .withEnv("SPRING_CLOUD_GATEWAY_ROUTES[1]_ID", "auth_route")
-        .withEnv("SPRING_CLOUD_GATEWAY_ROUTES[1]_URI", "http://auth-server:" + AUTH_SERVER_PORT)
-        .withEnv("SPRING_CLOUD_GATEWAY_ROUTES[1]_PREDICATES[0]", "Path=/oauth2/**")
+        .withEnv("SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES[1]_ID", "auth_route")
+        .withEnv("SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES[1]_URI", "http://auth-server:" + AUTH_SERVER_PORT)
+        .withEnv("SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES[1]_PREDICATES[0]", "Path=/oauth2/**")
 
         .withEnv("LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD_GATEWAY", "INFO") // SET TRACE for detailed logs
         .withEnv("LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_HTTP_SERVER_REACTIVE", "INFO") // SET DEBUG for detailed logs  
