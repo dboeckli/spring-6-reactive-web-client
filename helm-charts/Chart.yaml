@@ -14,9 +14,6 @@ dependencies:
     version: "v0.0.1-SNAPSHOT"
     repository: "oci://registry-1.docker.io/domboeckli"
     condition: mongodb.enabled
-    # we need to shorten the name because it gets to long
-    nameOverride: "mongodb"
-    fullnameOverride: "spring-6-reactive-web-client-mongodb"
   - name: spring-6-reactive-mongo
     version: "v0.0.1-SNAPSHOT"
     repository: "oci://registry-1.docker.io/domboeckli"

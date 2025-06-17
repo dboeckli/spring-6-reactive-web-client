@@ -86,3 +86,7 @@ spring-6-reactive-mongo:
   spring:
     oauth2ResourceServer:
       issuerUri: "http://spring-6-reactive-web-client-spring-6-auth-server.spring-6-reactive-web-client.svc.cluster.local:9000"
+
+spring-6-reactive-mongo-mongodb:
+  nameOverride: "mongodb"
+  fullnameOverride: "spring-6-reactive-web-client-mongodb"
