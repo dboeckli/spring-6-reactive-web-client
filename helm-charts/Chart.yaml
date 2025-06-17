@@ -2,8 +2,6 @@ apiVersion: v2
 name: @project.artifactId@
 description: A Helm chart for Spring 6 Project
 type: application
-# This value is set by Maven filtering
-# and will be replaced with a valid version number during the build process.
 version: @helm.chart.version@
 appVersion: @project.version@
 
