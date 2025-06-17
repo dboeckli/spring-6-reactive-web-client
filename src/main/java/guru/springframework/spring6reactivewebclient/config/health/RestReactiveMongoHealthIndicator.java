@@ -1,3 +1,4 @@
+
 package guru.springframework.spring6reactivewebclient.config.health;
 
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,7 @@ public class RestReactiveMongoHealthIndicator implements HealthIndicator {
 
     private final RestClient restClient;
     private final String restReactiveMongoUrl;
+    private boolean wasDownLastCheck = false;
 
     public RestReactiveMongoHealthIndicator(@Value("${webclient.reactive-mongo-url}") String restReactiveMongoUrl) {
         this.restClient = RestClient.create();
@@ -26,16 +28,22 @@ public class RestReactiveMongoHealthIndicator implements HealthIndicator {
                 .uri(restReactiveMongoUrl + "/actuator/health")
                 .retrieve()
                 .body(String.class);
+
             if (response != null && response.contains("\"status\":\"UP\"")) {
+                if (wasDownLastCheck) {
+                    log.info("Reactive Mongo Server ist wieder erreichbar unter {}", restReactiveMongoUrl);
+                    wasDownLastCheck = false;
+                }
                 return Health.up().build();
             } else {
-                log.warn("Reactive Mongo server is not reporting UP status at {}", restReactiveMongoUrl);
+                wasDownLastCheck = true;
+                log.warn("Reactive Mongo Server meldet keinen UP-Status unter {}", restReactiveMongoUrl);
                 return Health.down().build();
             }
         } catch (Exception e) {
-            log.warn("Reactive Mongo  server is not reachable at {}", restReactiveMongoUrl, e);
+            wasDownLastCheck = true;
+            log.warn("Reactive Mongo Server ist nicht erreichbar unter {}", restReactiveMongoUrl, e);
             return Health.down(e).build();
         }
     }
-
 }

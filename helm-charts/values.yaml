@@ -46,15 +46,21 @@ mongodb:
   targetPort: 27017
   nodePort: 30017
 
+  serviceFQDN:
+
 authServer:
   port: 9000
   targetPort: 9000
   nodePort: 30900
 
+  serviceFQDN:
+
 reactiveMongo:
   port: 8083
   targetPort: 8083
   nodePort: 30083
+
+  serviceFQDN:
 
 ingress:
   enabled: false
