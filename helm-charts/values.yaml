@@ -42,6 +42,8 @@ probes:
     failureThreshold: 6
 
 mongodb:
+  enabled: true
+
   port: 27017
   targetPort: 27017
   nodePort: 30017
@@ -49,6 +51,8 @@ mongodb:
   serviceFQDN:
 
 authServer:
+  enabled: true
+
   port: 9000
   targetPort: 9000
   nodePort: 30900
@@ -56,6 +60,8 @@ authServer:
   serviceFQDN:
 
 reactiveMongo:
+  enabled: true
+
   port: 8083
   targetPort: 8083
   nodePort: 30083

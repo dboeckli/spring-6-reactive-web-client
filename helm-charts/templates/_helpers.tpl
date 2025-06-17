@@ -57,3 +57,10 @@ Create the FQDN for the service
 {{- $fullname := include "application-template.fullname" . -}}
 {{- printf "%s.%s.svc.cluster.local" $fullname .Release.Namespace }}
 {{- end }}
+
+{{/*
+Create a truncated name for the mongodb service
+*/}}
+{{- define "application-template.mongodbServiceName" -}}
+{{- printf "%s-mongodb" .Release.Name | trunc 63 | trimSuffix "-" }}
+{{- end }}
