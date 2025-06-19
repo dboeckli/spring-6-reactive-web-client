@@ -16,8 +16,6 @@ that interacts with MongoDB, showcasing how to handle asynchronous data streams 
 - reactive-mongo module running on port 8083/30083
 - gateway module running on port 8080 (no gateway in kubernetes)
 
-- spring-6-rest-mvc module running on port 8081 but we are accessing this via module via the gateway which runs on port 8080
-
 ```plaintext
 +---------+               +----------------+               +--------------------+
 | Client  |               | Gateway Server |               | Authentication     |
