@@ -16,13 +16,13 @@ spec:
         {{- include "application-template.selectorLabels" . | nindent 8 }}
     spec:
       initContainers:
-        - name: wait-for-mongodb
-          image: busybox:1.37.0
-          command: [ 'sh', '-c', 'until nc -z spring-6-reactive-web-client-mongodb.{{ .Release.Namespace }}.svc.cluster.local {{ .Values.mongodb.port }}; do echo "[busybox: wait-for-mongodb] waiting for mongodb"; sleep 2; done; echo "[busybox: wait-for-mongodb] mongodb is available"' ]
-
         - name: wait-for-auth-server
           image: busybox:1.37.0
           command: [ 'sh', '-c', 'until nc -z {{ default (printf "%s-spring-6-auth-server.%s.svc.cluster.local" .Release.Name .Release.Namespace) .Values.authServer.serviceFQDN }} {{ .Values.authServer.port }}; do echo "[busybox: wait-for-auth-server] waiting for auth-server"; sleep 2; done; echo "[busybox: wait-for-auth-server] auth-server is available"' ]
+
+        - name: wait-for-mongodb
+          image: busybox:1.37.0
+          command: [ 'sh', '-c', 'until nc -z spring-6-reactive-web-client-mongodb.{{ .Release.Namespace }}.svc.cluster.local {{ .Values.mongodb.port }}; do echo "[busybox: wait-for-mongodb] waiting for mongodb"; sleep 2; done; echo "[busybox: wait-for-mongodb] mongodb is available"' ]
 
         - name: wait-for-reactive-mongo
           image: busybox:1.37.0
