@@ -1,3 +1,4 @@
+
 package guru.springframework.spring6reactivewebclient.config.health;
 
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,7 @@ public class AuthServerHealthIndicator implements ReactiveHealthIndicator {
 
     private final WebClient webClient;
     private final String authServerUrl;
+    private boolean wasDownLastCheck = false; // Initial-Wert auf false gesetzt
 
     public AuthServerHealthIndicator(WebClient.Builder webClientBuilder,
                                      @Value("${security.auth-server-health-url}") String authServerUrl) {
@@ -26,8 +28,15 @@ public class AuthServerHealthIndicator implements ReactiveHealthIndicator {
         return checkAuthServerHealth()
             .map(status -> status ? Health.up().build() : Health.down().build())
             .doOnNext(health -> {
-                if (health.getStatus().equals(Health.down().build().getStatus())) {
-                    log.warn("Auth server is not reachable at {}", authServerUrl);
+                boolean isUp = health.getStatus().equals(Health.up().build().getStatus());
+
+                if (!isUp) {
+                    wasDownLastCheck = true;
+                    log.warn("Auth server ist nicht erreichbar unter {}", authServerUrl);
+                } else if (wasDownLastCheck) {
+                    // Nur wenn der vorherige Status "down" war, wird die "up" Meldung gesendet
+                    log.info("Auth server ist wieder erreichbar unter {}", authServerUrl);
+                    wasDownLastCheck = false;
                 }
             });
     }

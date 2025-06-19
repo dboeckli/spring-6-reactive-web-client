@@ -42,19 +42,31 @@ probes:
     failureThreshold: 6
 
 mongodb:
+  enabled: true
+
   port: 27017
   targetPort: 27017
   nodePort: 30017
 
+  serviceFQDN:
+
 authServer:
+  enabled: true
+
   port: 9000
   targetPort: 9000
   nodePort: 30900
 
+  serviceFQDN:
+
 reactiveMongo:
+  enabled: true
+
   port: 8083
   targetPort: 8083
   nodePort: 30083
+
+  serviceFQDN:
 
 ingress:
   enabled: false
@@ -69,8 +81,13 @@ spring-6-auth-server:
 spring-6-reactive-mongo:
   authServer:
     enabled: false
+    serviceFQDN: "spring-6-reactive-web-client-spring-6-auth-server.spring-6-reactive-web-client.svc.cluster.local"
   mongodb:
     enabled: false
-  spring:
-    oauth2ResourceServer:
-      issuerUri: "http://spring-6-reactive-web-client-spring-6-auth-server.spring-6-reactive-web-client.svc.cluster.local:9000"
+    # here we use the shortenend name we have defined below
+    serviceFQDN: "spring-6-reactive-web-client-mongodb.spring-6-reactive-web-client.svc.cluster.local"
+
+# we need to shorten the name and fullname to avoid a random shortenend name by helm
+spring-6-reactive-mongo-mongodb:
+  nameOverride: "mongodb"
+  fullnameOverride: "spring-6-reactive-web-client-mongodb"

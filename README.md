@@ -16,8 +16,6 @@ that interacts with MongoDB, showcasing how to handle asynchronous data streams 
 - reactive-mongo module running on port 8083/30083
 - gateway module running on port 8080 (no gateway in kubernetes)
 
-- spring-6-rest-mvc module running on port 8081 but we are accessing this via module via the gateway which runs on port 8080
-
 ```plaintext
 +---------+               +----------------+               +--------------------+
 | Client  |               | Gateway Server |               | Authentication     |
@@ -101,7 +99,7 @@ tar -xvf $file.Name
 install
 ```powershell
 $APPLICATION_NAME = Get-ChildItem -Directory | Where-Object { $_.LastWriteTime -ge $file.LastWriteTime } | Select-Object -ExpandProperty Name
-helm upgrade --install $APPLICATION_NAME ./$APPLICATION_NAME --namespace spring-6-reactive-web-client --create-namespace --wait --timeout 5m --debug
+helm upgrade --install $APPLICATION_NAME ./$APPLICATION_NAME --namespace spring-6-reactive-web-client --create-namespace --wait --timeout 5m --debug --render-subchart-notes
 ```
 
 show logs and show event
@@ -123,6 +121,16 @@ kubectl describe pod $POD_NAME -n spring-6-reactive-web-client
 Show Endpoints
 ```powershell
 kubectl get endpoints -n spring-6-reactive-web-client
+```
+
+test
+```powershell
+helm test $APPLICATION_NAME --namespace spring-6-reactive-web-client --logs
+```
+
+status
+```powershell
+helm status $APPLICATION_NAME --namespace spring-6-reactive-web-client
 ```
 
 uninstall
