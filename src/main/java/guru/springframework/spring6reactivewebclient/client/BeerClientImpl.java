@@ -1,11 +1,11 @@
 package guru.springframework.spring6reactivewebclient.client;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import guru.springframework.spring6reactivewebclient.dto.BeerDto;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import tools.jackson.databind.JsonNode;
 
 import java.util.Map;
 

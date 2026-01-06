@@ -1,23 +1,25 @@
 package guru.springframework.spring6reactivewebclient.core;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.micrometer.metrics.test.autoconfigure.AutoConfigureMetrics;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.reactive.server.EntityExchangeResult;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.Objects;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 @DirtiesContext
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@AutoConfigureMockMvc
+@AutoConfigureWebTestClient
+@AutoConfigureMetrics
 @ActiveProfiles(value = "test")
 @Slf4j
 class ActuatorInfoTest {
@@ -34,40 +36,57 @@ class ActuatorInfoTest {
     @Test
     void actuatorInfoTest() {
         webTestClient.get().uri("/actuator/info")
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody()
-                .consumeWith(response -> {
-                    String jsonResponse = new String(response.getResponseBody());
-                    try {
-                        Object json = objectMapper.readValue(jsonResponse, Object.class);
-                        log.info("Response:\n{}", objectMapper.writeValueAsString(json));
-                    } catch (JsonProcessingException e) {
-                        log.error("Error parsing JSON response", e);
-                    }
-                })
-                .jsonPath("$.git.commit.id").isNotEmpty()
-                .jsonPath("$.build.javaVersion").isEqualTo("21")
-                .jsonPath("$.build.commit-id").isNotEmpty()
-                .jsonPath("$.build.javaVendor").isNotEmpty()
-                .jsonPath("$.build.artifact").isEqualTo(buildProperties.getArtifact())
-                .jsonPath("$.build.group").isEqualTo(buildProperties.getGroup());
-
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody()
+            .consumeWith(result -> {
+                String jsonResponse = new String(Objects.requireNonNull(result.getResponseBody()));
+                log.info("Response:\n{}", pretty(jsonResponse));
+            })
+            .jsonPath("$.git.commit.id.abbrev").isNotEmpty()
+            .jsonPath("$.java.version").value((String version) -> assertThat(version).startsWith("21"))
+            .jsonPath("$.build.artifact").isEqualTo(buildProperties.getArtifact())
+            .jsonPath("$.build.group").isEqualTo(buildProperties.getGroup())
+            .consumeWith(result -> {
+                String jsonResponse = new String(Objects.requireNonNull(result.getResponseBody()));
+                log.info("Response:\n{}", pretty(jsonResponse));
+            });
     }
 
 
     @Test
-    void actuatorHealthTest() throws JsonProcessingException {
-        EntityExchangeResult<byte[]> result = webTestClient.get().uri("/actuator/health/readiness")
-                .exchange()
-                .expectStatus().isOk()
-                .expectBody()
-                .jsonPath("$.status").isEqualTo("UP")
-                .returnResult();
+    void actuatorHealthTest() {
+        webTestClient.get().uri("/actuator/health/readiness")
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody()
+            .consumeWith(result -> {
+                String jsonResponse = new String(Objects.requireNonNull(result.getResponseBody()));
+                log.info("Response:\n{}", pretty(jsonResponse));
+            })
+            .jsonPath("$.status").isEqualTo("UP");
+    }
 
-        String jsonResponse = new String(Objects.requireNonNull(result.getResponseBody()));
-        Object json = objectMapper.readValue(jsonResponse, Object.class);
-        log.info("Response:\n{}", objectMapper.writeValueAsString(json));
+    @Test
+    void actuatorPrometheusTest() {
+        webTestClient.get().uri("/actuator/prometheus")
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody()
+            .consumeWith(result -> {
+                String jsonResponse = new String(Objects.requireNonNull(result.getResponseBody()));
+                log.info("Response:\n{}", jsonResponse);
+            });
+    }
+
+    private String pretty(String jsonResponse) {
+        try {
+            Object json = objectMapper.readValue(jsonResponse, Object.class);
+            return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
+        } catch (Exception e) {
+            // Falls kein valides JSON: unverändert zurückgeben
+            return jsonResponse;
+        }
     }
 
 }

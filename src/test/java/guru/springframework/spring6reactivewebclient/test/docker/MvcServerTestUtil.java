@@ -22,13 +22,27 @@ public class MvcServerTestUtil {
     public static void checkDatabaseInitDone(BeerClient beerClient) {
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
         AtomicReference<List<BeerDto>> beerListResponse = new AtomicReference<>();
+        AtomicReference<Throwable> lastError = new AtomicReference<>();
 
         await().atMost(30, TimeUnit.SECONDS).until(() -> {
-            beerClient.listBeerAsDtos().collectList().subscribe(beers -> {
-                log.info("### Found {} beers", beers.size());
-                beerListResponse.set(beers);
-                atomicBoolean.set(beers.size() == 3);
-            });
+            beerClient.listBeerAsDtos()
+                .collectList()
+                .doOnSubscribe(s -> log.info("### [INIT] subscribe listBeerAsDtos()"))
+                .doOnSuccess(beers -> log.info("### [INIT] onSuccess listBeerAsDtos(): size={}", beers.size()))
+                .doOnError(e -> log.error("### [INIT] onError listBeerAsDtos()", e))
+                .doFinally(signal -> log.info("### [INIT] finally listBeerAsDtos(): signal={}", signal))
+                .subscribe(beers -> {
+                    beerListResponse.set(beers);
+                    atomicBoolean.set(beers.size() == 3);
+                }, e -> {
+                    lastError.set(e);
+                    atomicBoolean.set(false);
+                });
+
+            if (lastError.get() != null) {
+                // sofort sichtbar machen, dass es ein Fehler ist und kein “hängt”
+                log.warn("### [INIT] letzter Fehler beim Polling: {}", lastError.get().toString());
+            }
             return atomicBoolean.get();
         });
 
@@ -38,7 +52,7 @@ public class MvcServerTestUtil {
 
         log.info("Database is fully initialized with 3 beers.");
         beers.forEach(beer -> log.info("Beer: {}", beer));
-        
+
         log.info("Database is fully initialized with 3 beers.");
     }
 }
