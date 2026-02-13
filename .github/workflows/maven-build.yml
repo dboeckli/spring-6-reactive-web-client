@@ -1,6 +1,9 @@
 name: Maven Build
 run-name: >
   ${{ github.workflow }}: ${{ github.event_name }} for ${{ github.ref_name }} by @${{ github.actor }}
+  
+env:
+  JAVA_VERSION: 25
 
 on:
   push:
@@ -30,11 +33,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up java 21
+      - name: Set up java
         uses: actions/setup-java@v5
         with:
-          java-version: 21
-          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'liberica'
           cache: 'maven'
           server-id: github # Value of the distributionManagement/repository/id field of the pom.xml.
           settings-path: ${{ github.workspace }} # location for the settings.xml file
@@ -135,15 +138,21 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Set up java 21
+      - name: Set up java
         uses: actions/setup-java@v5
         with:
-          java-version: 21
-          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'liberica'
           cache: 'maven'
           server-id: github # Value of the distributionManagement/repository/id field of the pom.xml.
           settings-path: ${{ github.workspace }} # location for the settings.xml file
 
+      # TODO: Remove workaround when https://github.com/buildpacks/pack/issues/2270 is fixed
+      - name: Disable containerd image store (Docker Engine 29+ workaround for Buildpacks)
+        run: |
+          echo '{ "features": { "containerd-snapshotter": false } }' | sudo tee /etc/docker/daemon.json
+          sudo systemctl restart docker     
+      
       - name: Create k8s Kind Cluster
         uses: helm/kind-action@v1.13.0
 
@@ -284,11 +293,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up java 21
+      - name: Set up java
         uses: actions/setup-java@v5
         with:
-          java-version: 21
-          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'liberica'
           cache: 'maven'
           server-id: github # Value of the distributionManagement/repository/id field of the pom.xml.
           settings-path: ${{ github.workspace }} # location for the settings.xml file
