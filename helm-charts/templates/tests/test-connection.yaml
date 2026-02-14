@@ -17,21 +17,27 @@ spec:
       command: [ '/bin/sh', '-c' ]
       args:
         - |
+          set +o errexit
+          echo ">>> Start Test Reactive Web Client"
+
           ERROR_OCCURED=0
 
           echo "### Test 1: Checking health endpoint using service short name: {{ include "application-template.fullname" . }}"
           wget -O- -q {{ include "application-template.fullname" . }}:{{ .Values.service.port }}/actuator/health
-          echo "Exit code: $?"
+
           if [ $? -ne 0 ]; then
             ERROR_OCCURED=1
           fi
+          echo "Exit code: $?"
 
           echo "### Test 2: Checking health endpoint using fully qualified domain name (FQDN): {{ include "application-template.serviceFQDN" . }}"
           wget -O- -q {{ include "application-template.serviceFQDN" . }}:{{ .Values.service.port }}/actuator/health
-          echo "Exit code: $?"
+
+
           if [ $? -ne 0 ]; then
             ERROR_OCCURED=1
           fi
+          echo "Exit code: $?"
 
           if [ $ERROR_OCCURED -ne 0 ]; then
             # Print DNS configuration
@@ -44,5 +50,7 @@ spec:
             echo "nslookup AP_FQDN: $AP_FQDN"
             nslookup $AP_FQDN
           fi
+
+          echo ">>> End Test Reactive Web Client"
 
   restartPolicy: Never
