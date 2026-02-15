@@ -5,6 +5,6 @@ $APPLICATION_NAME = Get-ChildItem -Directory | Where-Object { $_.LastWriteTime -
 
 helm uninstall $APPLICATION_NAME --namespace spring-6-reactive-web-client
 
-kubectl delete pod -n kbe-brewery-gateway --field-selector=status.phase==Succeeded
-kubectl delete pod -n kbe-brewery-gateway --field-selector=status.phase==Failed
+# Verbleibende Pods löschen
+kubectl delete pods --all -n spring-6-reactive-web-client
 
