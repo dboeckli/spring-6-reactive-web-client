@@ -4,3 +4,7 @@ $file = Get-ChildItem -Filter spring-6-reactive-web-client-v*.tgz | Select-Objec
 $APPLICATION_NAME = Get-ChildItem -Directory | Where-Object { $_.LastWriteTime -ge $file.LastWriteTime } | Select-Object -ExpandProperty Name
 
 helm uninstall $APPLICATION_NAME --namespace spring-6-reactive-web-client
+
+# Verbleibende Pods löschen
+kubectl delete pods --all -n spring-6-reactive-web-client
+
