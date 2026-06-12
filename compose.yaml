@@ -1,6 +1,6 @@
 services:
   mongodb:
-    image: 'mongo:8.3.3'
+    image: 'mongo:8.3.4'
     environment:
       - 'MONGO_INITDB_DATABASE=sfg'
       - 'MONGO_INITDB_ROOT_USERNAME=root'
