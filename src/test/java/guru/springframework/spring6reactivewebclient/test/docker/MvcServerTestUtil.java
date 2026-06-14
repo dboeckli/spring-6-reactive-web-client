@@ -1,6 +1,5 @@
 package guru.springframework.spring6reactivewebclient.test.docker;
 
-
 import guru.springframework.spring6reactivewebclient.client.BeerClient;
 import guru.springframework.spring6reactivewebclient.dto.BeerDto;
 import lombok.experimental.UtilityClass;
@@ -55,4 +54,5 @@ public class MvcServerTestUtil {
 
         log.info("Database is fully initialized with 3 beers.");
     }
+
 }

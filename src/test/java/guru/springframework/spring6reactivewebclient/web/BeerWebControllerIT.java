@@ -29,18 +29,16 @@ class BeerWebControllerIT {
     void testGetBeers() {
         Mono<Rendering> result = controller.getBeers();
 
-        StepVerifier.create(result)
-            .assertNext(rendering -> {
-                Map<String, Object> model = rendering.modelAttributes();
-                assertTrue(model.containsKey("beers"));
-                List<BeerDto> beers = (List<BeerDto>) model.get("beers");
-                assertFalse(beers.isEmpty());
-                beers.forEach(beer -> {
-                    assertNotNull(beer.getId());
-                    assertNotNull(beer.getBeerName());
-                });
-            })
-            .verifyComplete();
+        StepVerifier.create(result).assertNext(rendering -> {
+            Map<String, Object> model = rendering.modelAttributes();
+            assertTrue(model.containsKey("beers"));
+            List<BeerDto> beers = (List<BeerDto>) model.get("beers");
+            assertFalse(beers.isEmpty());
+            beers.forEach(beer -> {
+                assertNotNull(beer.getId());
+                assertNotNull(beer.getBeerName());
+            });
+        }).verifyComplete();
     }
 
     @Test
@@ -54,14 +52,13 @@ class BeerWebControllerIT {
 
         Mono<Rendering> result = controller.getBeerById(beerId);
 
-        StepVerifier.create(result)
-            .assertNext(rendering -> {
-                Map<String, Object> model = rendering.modelAttributes();
-                assertTrue(model.containsKey("beer"));
-                BeerDto returnedBeer = (BeerDto) model.get("beer");
-                assertEquals(beerId, returnedBeer.getId());
-                assertNotNull(returnedBeer.getBeerName());
-            })
-            .verifyComplete();
+        StepVerifier.create(result).assertNext(rendering -> {
+            Map<String, Object> model = rendering.modelAttributes();
+            assertTrue(model.containsKey("beer"));
+            BeerDto returnedBeer = (BeerDto) model.get("beer");
+            assertEquals(beerId, returnedBeer.getId());
+            assertNotNull(returnedBeer.getBeerName());
+        }).verifyComplete();
     }
+
 }

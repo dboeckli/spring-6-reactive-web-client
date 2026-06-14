@@ -23,7 +23,7 @@ class BeerWebControllerTest {
     BeerClient beerClient;
 
     BeerWebController controller;
-    
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
@@ -41,16 +41,14 @@ class BeerWebControllerTest {
         Mono<Rendering> result = controller.getBeers();
 
         // Then
-        StepVerifier.create(result)
-            .assertNext(rendering -> {
-                Map<String, Object> model = rendering.modelAttributes();
-                assertTrue(model.containsKey("beers"));
-                List<BeerDto> beers = (List<BeerDto>) model.get("beers");
-                assertEquals(2, beers.size());
-                assertEquals("Beer1", beers.get(0).getBeerName());
-                assertEquals("Beer2", beers.get(1).getBeerName());
-            })
-            .verifyComplete();
+        StepVerifier.create(result).assertNext(rendering -> {
+            Map<String, Object> model = rendering.modelAttributes();
+            assertTrue(model.containsKey("beers"));
+            List<BeerDto> beers = (List<BeerDto>) model.get("beers");
+            assertEquals(2, beers.size());
+            assertEquals("Beer1", beers.get(0).getBeerName());
+            assertEquals("Beer2", beers.get(1).getBeerName());
+        }).verifyComplete();
 
         verify(beerClient, times(1)).listBeerAsDtos();
     }
@@ -66,16 +64,15 @@ class BeerWebControllerTest {
         Mono<Rendering> result = controller.getBeerById(beerId);
 
         // Then
-        StepVerifier.create(result)
-            .assertNext(rendering -> {
-                Map<String, Object> model = rendering.modelAttributes();
-                assertTrue(model.containsKey("beer"));
-                BeerDto returnedBeer = (BeerDto) model.get("beer");
-                assertEquals(beerId, returnedBeer.getId());
-                assertEquals("TestBeer", returnedBeer.getBeerName());
-            })
-            .verifyComplete();
+        StepVerifier.create(result).assertNext(rendering -> {
+            Map<String, Object> model = rendering.modelAttributes();
+            assertTrue(model.containsKey("beer"));
+            BeerDto returnedBeer = (BeerDto) model.get("beer");
+            assertEquals(beerId, returnedBeer.getId());
+            assertEquals("TestBeer", returnedBeer.getBeerName());
+        }).verifyComplete();
 
         verify(beerClient, times(1)).getBeerById(beerId);
     }
+
 }

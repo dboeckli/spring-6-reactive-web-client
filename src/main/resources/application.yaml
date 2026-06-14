@@ -1,6 +1,6 @@
 server:
-  port : 8087
-  
+  port: 8087
+
 management:
   health:
     readinessstate:
@@ -73,14 +73,21 @@ management:
 
 spring:
   application:
-    name: spring-6-reactive-web-client  
-    
+    name: spring-6-reactive-web-client
+
+  reactor:
+    context-propagation: AUTO
+
+  threads:
+    virtual:
+      enabled: true
+
   docker:
     compose:
       enabled: true
       stop:
-        command: down  
-  
+        command: down
+
   security:
     oauth2:
       client:
@@ -91,7 +98,7 @@ spring:
             client-secret: secret
             scope[0]: message.read
             scope[1]: message.write
-            authorization-grant-type: client_credentials   
+            authorization-grant-type: client_credentials
         provider:
           springauth:
             token-uri: http://localhost:9000/oauth2/token
@@ -100,3 +107,7 @@ security:
 
 webclient:
   reactive-mongo-url: http://localhost:8083
+
+logging:
+  level:
+    guru.springframework.spring6reactivewebclient.log.RequestLoggingFilter: DEBUG

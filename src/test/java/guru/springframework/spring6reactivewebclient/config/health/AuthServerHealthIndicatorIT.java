@@ -19,11 +19,14 @@ class AuthServerHealthIndicatorIT {
 
     @Test
     void testAuthServerHealthCheck() {
-        webTestClient.get().uri("/actuator/health/authServer")
+        webTestClient.get()
+            .uri("/actuator/health/authServer")
             .exchange()
-            .expectStatus().isOk()
+            .expectStatus()
+            .isOk()
             .expectBody()
-            .jsonPath("$.status").isEqualTo("UP");
+            .jsonPath("$.status")
+            .isEqualTo("UP");
     }
-  
+
 }

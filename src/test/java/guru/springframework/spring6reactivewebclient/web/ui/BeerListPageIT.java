@@ -45,7 +45,7 @@ class BeerListPageIT {
     @BeforeEach
     public void setUp() {
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless");  // Run in headless mode
+        options.addArguments("--headless"); // Run in headless mode
         webDriver = new ChromeDriver(options);
     }
 
@@ -66,12 +66,13 @@ class BeerListPageIT {
 
     @Test
     @Order(1)
-     void testBeerListContainsItems() {
+    void testBeerListContainsItems() {
         webDriver.get("http://localhost:" + port + "/beers");
         waitForPageLoad();
         WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(10));
 
-        List<WebElement> beerRows = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector("#beerTable tbody tr")));
+        List<WebElement> beerRows = wait
+            .until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.cssSelector("#beerTable tbody tr")));
 
         log.info("### Found {} beer rows", beerRows.size());
 
@@ -106,18 +107,18 @@ class BeerListPageIT {
         WebElement beerIdElement = webDriver.findElement(By.id("beerId"));
 
         assertAll("Beer Details Page Assertions",
-            () -> assertEquals("http://localhost:" + port + "/beer/" + expectedBeerId, webDriver.getCurrentUrl(),
-                "Should navigate to the specific beer page"),
-            () -> assertEquals("Beer Details", webDriver.findElement(By.id("pageTitle")).getText(),
-                "Page title should be 'Beer Details'"),
-            () -> assertEquals(expectedBeerId, beerIdElement.getText(),
-                "Displayed beer ID should match the expected ID")
-        );
-   }
+                () -> assertEquals("http://localhost:" + port + "/beer/" + expectedBeerId, webDriver.getCurrentUrl(),
+                        "Should navigate to the specific beer page"),
+                () -> assertEquals("Beer Details", webDriver.findElement(By.id("pageTitle")).getText(),
+                        "Page title should be 'Beer Details'"),
+                () -> assertEquals(expectedBeerId, beerIdElement.getText(),
+                        "Displayed beer ID should match the expected ID"));
+    }
 
     private void waitForPageLoad() {
         WebDriverWait wait = new WebDriverWait(webDriver, Duration.ofSeconds(30));
-        wait.until((ExpectedCondition<Boolean>) wd ->
-            Objects.equals(((JavascriptExecutor) wd).executeScript("return document.readyState"), "complete"));
+        wait.until((ExpectedCondition<Boolean>) wd -> Objects
+            .equals(((JavascriptExecutor) wd).executeScript("return document.readyState"), "complete"));
     }
+
 }

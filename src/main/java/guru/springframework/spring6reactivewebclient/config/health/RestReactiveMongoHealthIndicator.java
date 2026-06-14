@@ -13,7 +13,9 @@ import org.springframework.web.client.RestClient;
 public class RestReactiveMongoHealthIndicator implements HealthIndicator {
 
     private final RestClient restClient;
+
     private final String restReactiveMongoUrl;
+
     private boolean wasDownLastCheck = false;
 
     public RestReactiveMongoHealthIndicator(@Value("${webclient.reactive-mongo-url}") String restReactiveMongoUrl) {
@@ -35,15 +37,18 @@ public class RestReactiveMongoHealthIndicator implements HealthIndicator {
                     wasDownLastCheck = false;
                 }
                 return Health.up().build();
-            } else {
+            }
+            else {
                 wasDownLastCheck = true;
                 log.warn("Reactive Mongo Server meldet keinen UP-Status unter {}", restReactiveMongoUrl);
                 return Health.down().build();
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             wasDownLastCheck = true;
             log.warn("Reactive Mongo Server ist nicht erreichbar unter {}", restReactiveMongoUrl, e);
             return Health.down(e).build();
         }
     }
+
 }

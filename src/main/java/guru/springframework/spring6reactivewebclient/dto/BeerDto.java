@@ -13,13 +13,23 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BeerDto {
+
     private String id;
+
     private Integer version;
+
     private String beerName;
+
     private String beerStyle;
+
     private String upc;
+
     private Integer quantityOnHand;
+
     private BigDecimal price;
+
     private LocalDateTime createdDate;
+
     private LocalDateTime updateDate;
+
 }

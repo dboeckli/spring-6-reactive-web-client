@@ -73,7 +73,14 @@ management:
 
 spring:
   application:
-    name: spring-6-reactive-web-client  
+    name: spring-6-reactive-web-client
+
+  reactor:
+    context-propagation: AUTO
+
+  threads:
+    virtual:
+      enabled: true
     
   docker:
     compose:
@@ -103,3 +110,7 @@ security:
 
 webclient:
   reactive-mongo-url: http://localhost:8083
+
+logging:
+  level:
+    guru.springframework.spring6reactivewebclient.log.RequestLoggingFilter: DEBUG

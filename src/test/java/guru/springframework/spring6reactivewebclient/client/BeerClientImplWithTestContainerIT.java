@@ -51,8 +51,11 @@ class BeerClientImplWithTestContainerIT {
     private static final String DOCKER_IMAGE_PREFIX = "domboeckli";
 
     private static final String MONGO_VERSION = "8.2.3";
+
     private static final String AUTH_SERVER_VERSION = "0.0.5-SNAPSHOT";
+
     private static final String REACTIVE_MONGO_VERSION = "0.0.1-SNAPSHOT";
+
     private static final String GATEWAY_VERSION = "0.0.3-SNAPSHOT";
 
     static final int REST_REACTIVE_MONGO_PORT = TestSocketUtils.findAvailableTcpPort();
@@ -66,9 +69,7 @@ class BeerClientImplWithTestContainerIT {
 
         @Bean
         WebClientCustomizer webClientLoggingCustomizer() {
-            return builder -> builder
-                .filter(logRequest())
-                .filter(logResponse());
+            return builder -> builder.filter(logRequest()).filter(logResponse());
         }
 
         private static ExchangeFilterFunction logRequest() {
@@ -84,10 +85,12 @@ class BeerClientImplWithTestContainerIT {
                 return Mono.just(resp);
             });
         }
+
     }
 
     @Container
-    // The MongoDBContainer provided by mongo testcontainer does not work with user env variables:
+    // The MongoDBContainer provided by mongo testcontainer does not work with user env
+    // variables:
     // See: https://github.com/testcontainers/testcontainers-java/issues/4695
     static GenericContainer<?> mongoDBContainer = new GenericContainer<>("mongo:" + MONGO_VERSION)
         .withNetworkAliases("mongodb")
@@ -100,17 +103,15 @@ class BeerClientImplWithTestContainerIT {
 
         .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("mongodb")))
 
-        .waitingFor(new WaitAllStrategy()
-            .withStartupTimeout(Duration.ofSeconds(90))
+        .waitingFor(new WaitAllStrategy().withStartupTimeout(Duration.ofSeconds(90))
             .withStrategy(Wait.forListeningPort())
             .withStrategy(Wait.forSuccessfulCommand(
-                "mongosh --quiet --username root --password secret --authenticationDatabase admin " +
-                    "--eval \"db.adminCommand('ping').ok\""
-            ))
-        );
+                    "mongosh --quiet --username root --password secret --authenticationDatabase admin "
+                            + "--eval \"db.adminCommand('ping').ok\"")));
 
     @Container
-    static GenericContainer<?> authServer = new GenericContainer<>(DOCKER_IMAGE_PREFIX + "/spring-6-auth-server:" + AUTH_SERVER_VERSION)
+    static GenericContainer<?> authServer = new GenericContainer<>(
+            DOCKER_IMAGE_PREFIX + "/spring-6-auth-server:" + AUTH_SERVER_VERSION)
         .withNetworkAliases("auth-server")
         .withNetwork(sharedNetwork)
 
@@ -121,29 +122,21 @@ class BeerClientImplWithTestContainerIT {
         .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("auth-server")))
         .waitingFor(Wait.forHttp("/actuator/health/readiness")
             .forStatusCode(200)
-            .forResponsePredicate(response ->
-                response.contains("\"status\":\"UP\"")
-            )
-        )
-        .waitingFor(new WaitAllStrategy()
-            .withStartupTimeout(Duration.ofSeconds(90))
+            .forResponsePredicate(response -> response.contains("\"status\":\"UP\"")))
+        .waitingFor(new WaitAllStrategy().withStartupTimeout(Duration.ofSeconds(90))
             .withStrategy(Wait.forHttp("/actuator/health/readiness")
                 .forStatusCode(200)
-                .forResponsePredicate(response -> response.contains("\"status\":\"UP\""))
-            )
-            .withStrategy(Wait.forHttp("/actuator/health")
-                .forStatusCode(200)
-                .forResponsePredicate(response -> {
-                    log.info("####################################################################################");
-                    log.info("AuthServer /actuator/health response: {}", response);
-                    log.info("####################################################################################");
-                    return true;
-                })
-            )
-        );
+                .forResponsePredicate(response -> response.contains("\"status\":\"UP\"")))
+            .withStrategy(Wait.forHttp("/actuator/health").forStatusCode(200).forResponsePredicate(response -> {
+                log.info("####################################################################################");
+                log.info("AuthServer /actuator/health response: {}", response);
+                log.info("####################################################################################");
+                return true;
+            })));
 
     @Container
-    static GenericContainer<?> restReactiveMongo = new GenericContainer<>(DOCKER_IMAGE_PREFIX + "/spring-6-reactive-mongo:" + REACTIVE_MONGO_VERSION)
+    static GenericContainer<?> restReactiveMongo = new GenericContainer<>(
+            DOCKER_IMAGE_PREFIX + "/spring-6-reactive-mongo:" + REACTIVE_MONGO_VERSION)
         .withNetworkAliases("reactive-mongo")
         .withExposedPorts(REST_REACTIVE_MONGO_PORT)
         .withNetwork(sharedNetwork)
@@ -163,30 +156,26 @@ class BeerClientImplWithTestContainerIT {
 
         .dependsOn(mongoDBContainer, authServer)
         .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("reactive-mongo")))
-        .waitingFor(new WaitAllStrategy()
-            .withStartupTimeout(Duration.ofSeconds(90))
+        .waitingFor(new WaitAllStrategy().withStartupTimeout(Duration.ofSeconds(90))
             .withStrategy(Wait.forHttp("/actuator/health/readiness")
                 .forStatusCode(200)
-                .forResponsePredicate(r -> r.contains("\"status\":\"UP\""))
-            )
-            .withStrategy(Wait.forHttp("/actuator/health")
-                .forStatusCode(200)
-                .forResponsePredicate(r -> {
-                    boolean ok = r.contains("\"mongo\"") && r.contains("\"status\":\"UP\"");
-                    if (!ok) {
-                        String shortBody = r.length() > 800 ? r.substring(0, 800) + " …(truncated)" : r;
-                        log.info("reactive-mongo Health noch nicht ready (warte auf mongo UP). Response: {}", shortBody);
-                    } else {
-                        String shortBody = r.length() > 800 ? r.substring(0, 800) + " …(truncated)" : r;
-                        log.info("reactive-mongo Health ist UP. Response: {}", shortBody);
-                    }
-                    return ok;
-                })
-            )
-        );
+                .forResponsePredicate(r -> r.contains("\"status\":\"UP\"")))
+            .withStrategy(Wait.forHttp("/actuator/health").forStatusCode(200).forResponsePredicate(r -> {
+                boolean ok = r.contains("\"mongo\"") && r.contains("\"status\":\"UP\"");
+                if (!ok) {
+                    String shortBody = r.length() > 800 ? r.substring(0, 800) + " …(truncated)" : r;
+                    log.info("reactive-mongo Health noch nicht ready (warte auf mongo UP). Response: {}", shortBody);
+                }
+                else {
+                    String shortBody = r.length() > 800 ? r.substring(0, 800) + " …(truncated)" : r;
+                    log.info("reactive-mongo Health ist UP. Response: {}", shortBody);
+                }
+                return ok;
+            })));
 
     @Container
-    static GenericContainer<?> restGateway = new GenericContainer<>(DOCKER_IMAGE_PREFIX + "/spring-6-gateway:" + GATEWAY_VERSION)
+    static GenericContainer<?> restGateway = new GenericContainer<>(
+            DOCKER_IMAGE_PREFIX + "/spring-6-gateway:" + GATEWAY_VERSION)
         .withExposedPorts(REST_GATEWAY_PORT)
         .withNetwork(sharedNetwork)
 
@@ -196,13 +185,56 @@ class BeerClientImplWithTestContainerIT {
 
         .withEnv("SECURITY_AUTH_SERVER_HEALTH_URL", "http://auth-server:" + AUTH_SERVER_PORT)
         .withEnv("SECURITY_REACTIVEMONGO_HEALTH_URL", "http://reactive-mongo:" + REST_REACTIVE_MONGO_PORT)
-        .withEnv("SECURITY_MVC_HEALTH_URL", "http://reactive-mongo:" + REST_REACTIVE_MONGO_PORT) // by intention, we are the reactive-mongo route. This is a workaround to get up status
-        .withEnv("SECURITY_REACTIVE_HEALTH_URL", "http://reactive-mongo:" + REST_REACTIVE_MONGO_PORT) // by intention, we are the reactive-mongo route. This is a workaround to get up status
-        .withEnv("SECURITY_DATAREST_HEALTH_URL", "http://reactive-mongo:" + REST_REACTIVE_MONGO_PORT) // by intention, we are the reactive-mongo route. This is a workaround to get up status
+        .withEnv("SECURITY_MVC_HEALTH_URL", "http://reactive-mongo:" + REST_REACTIVE_MONGO_PORT) // by
+                                                                                                 // intention,
+                                                                                                 // we
+                                                                                                 // are
+                                                                                                 // the
+                                                                                                 // reactive-mongo
+                                                                                                 // route.
+                                                                                                 // This
+                                                                                                 // is
+                                                                                                 // a
+                                                                                                 // workaround
+                                                                                                 // to
+                                                                                                 // get
+                                                                                                 // up
+                                                                                                 // status
+        .withEnv("SECURITY_REACTIVE_HEALTH_URL", "http://reactive-mongo:" + REST_REACTIVE_MONGO_PORT) // by
+                                                                                                      // intention,
+                                                                                                      // we
+                                                                                                      // are
+                                                                                                      // the
+                                                                                                      // reactive-mongo
+                                                                                                      // route.
+                                                                                                      // This
+                                                                                                      // is
+                                                                                                      // a
+                                                                                                      // workaround
+                                                                                                      // to
+                                                                                                      // get
+                                                                                                      // up
+                                                                                                      // status
+        .withEnv("SECURITY_DATAREST_HEALTH_URL", "http://reactive-mongo:" + REST_REACTIVE_MONGO_PORT) // by
+                                                                                                      // intention,
+                                                                                                      // we
+                                                                                                      // are
+                                                                                                      // the
+                                                                                                      // reactive-mongo
+                                                                                                      // route.
+                                                                                                      // This
+                                                                                                      // is
+                                                                                                      // a
+                                                                                                      // workaround
+                                                                                                      // to
+                                                                                                      // get
+                                                                                                      // up
+                                                                                                      // status
 
         // Route for spring-6-reactive-mongo
         .withEnv("SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES[0]_ID", "mvc_route")
-        .withEnv("SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES[0]_URI", "http://reactive-mongo:" + REST_REACTIVE_MONGO_PORT)
+        .withEnv("SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES[0]_URI",
+                "http://reactive-mongo:" + REST_REACTIVE_MONGO_PORT)
         .withEnv("SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES[0]_PREDICATES[0]", "Path=/api/v3/**")
 
         // Route for spring-6-auth-server
@@ -210,30 +242,33 @@ class BeerClientImplWithTestContainerIT {
         .withEnv("SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES[1]_URI", "http://auth-server:" + AUTH_SERVER_PORT)
         .withEnv("SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES[1]_PREDICATES[0]", "Path=/oauth2/**")
 
-        .withEnv("LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD_GATEWAY", "INFO") // SET TRACE for detailed logs
-        .withEnv("LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_HTTP_SERVER_REACTIVE", "INFO") // SET DEBUG for detailed logs  
-        .withEnv("LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB_REACTIVE", "INFO") // SET DEBUG for detailed logs
+        .withEnv("LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD_GATEWAY", "INFO") // SET TRACE
+                                                                            // for
+                                                                            // detailed
+                                                                            // logs
+        .withEnv("LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_HTTP_SERVER_REACTIVE", "INFO") // SET
+                                                                                   // DEBUG
+                                                                                   // for
+                                                                                   // detailed
+                                                                                   // logs
+        .withEnv("LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB_REACTIVE", "INFO") // SET DEBUG
+                                                                           // for detailed
+                                                                           // logs
         .withEnv("LOGGING_LEVEL_REACTOR_IPC_NETTY", "INFO") // SET DEBUG for detailed logs
         .withEnv("LOGGING_LEVEL_REACTOR_NETTY", "INFO") // SET DEBUG for detailed logs
 
         .dependsOn(authServer, restReactiveMongo)
         .withLogConsumer(new Slf4jLogConsumer(LoggerFactory.getLogger("gateway")))
-        .waitingFor(new WaitAllStrategy()
-            .withStartupTimeout(Duration.ofSeconds(90))
+        .waitingFor(new WaitAllStrategy().withStartupTimeout(Duration.ofSeconds(90))
             .withStrategy(Wait.forHttp("/actuator/health/readiness")
                 .forStatusCode(200)
-                .forResponsePredicate(response -> response.contains("\"status\":\"UP\""))
-            )
-            .withStrategy(Wait.forHttp("/actuator/health")
-                .forStatusCode(200)
-                .forResponsePredicate(response -> {
-                    log.info("####################################################################################");
-                    log.info("Gateway /actuator/health response: {}", response);
-                    log.info("####################################################################################");
-                    return true;
-                })
-            )
-        );
+                .forResponsePredicate(response -> response.contains("\"status\":\"UP\"")))
+            .withStrategy(Wait.forHttp("/actuator/health").forStatusCode(200).forResponsePredicate(response -> {
+                log.info("####################################################################################");
+                log.info("Gateway /actuator/health response: {}", response);
+                log.info("####################################################################################");
+                return true;
+            })));
 
     @Autowired
     BeerClient beerClient;
@@ -244,19 +279,23 @@ class BeerClientImplWithTestContainerIT {
         log.info("### Rest Gateway Server URL: " + gatewayServerUrl);
         registry.add("webclient.reactive-mongo-url", () -> gatewayServerUrl);
 
-
         String authServerBaseUrl = "http://" + authServer.getHost() + ":" + authServer.getFirstMappedPort();
 
-        registry.add("spring.security.oauth2.client.provider.springauth.authorization-uri", () -> authServerBaseUrl + "/auth2/authorize");
-        registry.add("spring.security.oauth2.client.provider.springauth.token-uri", () -> authServerBaseUrl + "/oauth2/token");
+        registry.add("spring.security.oauth2.client.provider.springauth.authorization-uri",
+                () -> authServerBaseUrl + "/auth2/authorize");
+        registry.add("spring.security.oauth2.client.provider.springauth.token-uri",
+                () -> authServerBaseUrl + "/oauth2/token");
         registry.add("spring.security.oauth2.resourceserver.jwt.issuer-uri", () -> authServerBaseUrl);
     }
 
     @BeforeAll
     static void setUp() {
-        log.info("#### auth server listening on port {} and host: {} and port {}", AUTH_SERVER_PORT, authServer.getHost(), authServer.getFirstMappedPort());
-        log.info("#### gateway server  listening on port {} and host: {} and port {}", REST_GATEWAY_PORT, restGateway.getHost(), restGateway.getFirstMappedPort());
-        log.info("#### reactive-mongo server listening on port {} and host: {} and port {}", REST_REACTIVE_MONGO_PORT, restReactiveMongo.getHost(), restReactiveMongo.getFirstMappedPort());
+        log.info("#### auth server listening on port {} and host: {} and port {}", AUTH_SERVER_PORT,
+                authServer.getHost(), authServer.getFirstMappedPort());
+        log.info("#### gateway server  listening on port {} and host: {} and port {}", REST_GATEWAY_PORT,
+                restGateway.getHost(), restGateway.getFirstMappedPort());
+        log.info("#### reactive-mongo server listening on port {} and host: {} and port {}", REST_REACTIVE_MONGO_PORT,
+                restReactiveMongo.getHost(), restReactiveMongo.getFirstMappedPort());
     }
 
     @Test
@@ -269,9 +308,7 @@ class BeerClientImplWithTestContainerIT {
             beerResponse.get().add(response);
         });
 
-        await()
-            .atMost(20, TimeUnit.SECONDS)
-            .untilAsserted(() -> assertEquals(2, beerResponse.get().size()));
+        await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> assertEquals(2, beerResponse.get().size()));
     }
 
     @Test
@@ -279,16 +316,15 @@ class BeerClientImplWithTestContainerIT {
     void testGetBeerById() {
         AtomicReference<BeerDto> beerResponse = new AtomicReference<>();
 
-        beerClient.listBeerAsDtos().take(1)
+        beerClient.listBeerAsDtos()
+            .take(1)
             .flatMap(beerDto -> beerClient.getBeerById(beerDto.getId()))
             .subscribe(beerDto -> {
                 log.info("### Response: " + beerDto);
                 beerResponse.set(beerDto);
             });
 
-        await()
-            .atMost(20, TimeUnit.SECONDS)
-            .untilAsserted(() -> assertNotNull(beerResponse.get()));
+        await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> assertNotNull(beerResponse.get()));
     }
 
     @Test
@@ -301,9 +337,7 @@ class BeerClientImplWithTestContainerIT {
             beerListResponse.set(response);
         });
 
-        await()
-            .atMost(20, TimeUnit.SECONDS)
-            .untilAsserted(() -> assertNotNull(beerListResponse));
+        await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> assertNotNull(beerListResponse));
     }
 
     @Test
@@ -316,9 +350,7 @@ class BeerClientImplWithTestContainerIT {
             beerListResponse.get().add(response);
         });
 
-        await()
-            .atMost(20, TimeUnit.SECONDS)
-            .untilAsserted(() -> assertEquals(3, beerListResponse.get().size()));
+        await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> assertEquals(3, beerListResponse.get().size()));
     }
 
     @Test
@@ -331,9 +363,7 @@ class BeerClientImplWithTestContainerIT {
             beerListResponse.get().add(response);
         });
 
-        await()
-            .atMost(20, TimeUnit.SECONDS)
-            .untilAsserted(() -> assertEquals(3, beerListResponse.get().size()));
+        await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> assertEquals(3, beerListResponse.get().size()));
     }
 
     @Test
@@ -346,9 +376,7 @@ class BeerClientImplWithTestContainerIT {
             beerListResponse.get().add(response);
         });
 
-        await()
-            .atMost(20, TimeUnit.SECONDS)
-            .untilAsserted(() -> assertEquals(3, beerListResponse.get().size()));
+        await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> assertEquals(3, beerListResponse.get().size()));
     }
 
     @Test
@@ -364,19 +392,16 @@ class BeerClientImplWithTestContainerIT {
             .upc("123245")
             .build();
 
-        beerClient.createBeer(newDto)
-            .subscribe(dto -> {
-                log.info("### Response: " + dto);
-                createdBeer.set(dto);
-            });
+        beerClient.createBeer(newDto).subscribe(dto -> {
+            log.info("### Response: " + dto);
+            createdBeer.set(dto);
+        });
 
-        await()
-            .atMost(20, TimeUnit.SECONDS)
-            .untilAsserted(() -> {
-                assertNotNull(createdBeer.get());
-                assertEquals("Created Beer", createdBeer.get().getBeerName());
-                assertNotNull(createdBeer.get().getId());
-            });
+        await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
+            assertNotNull(createdBeer.get());
+            assertEquals("Created Beer", createdBeer.get().getBeerName());
+            assertNotNull(createdBeer.get().getId());
+        });
     }
 
     @Test
@@ -386,18 +411,15 @@ class BeerClientImplWithTestContainerIT {
         beerToUpdate.setBeerName("Updated Beer");
         AtomicReference<BeerDto> updatedBeer = new AtomicReference<>();
 
-        beerClient.updateBeer(beerToUpdate)
-            .subscribe(dto -> {
-                log.info("### Response: " + dto);
-                updatedBeer.set(dto);
-            });
+        beerClient.updateBeer(beerToUpdate).subscribe(dto -> {
+            log.info("### Response: " + dto);
+            updatedBeer.set(dto);
+        });
 
-        await()
-            .atMost(20, TimeUnit.SECONDS)
-            .untilAsserted(() -> {
-                assertNotNull(updatedBeer.get());
-                assertEquals("Updated Beer", updatedBeer.get().getBeerName());
-            });
+        await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
+            assertNotNull(updatedBeer.get());
+            assertEquals("Updated Beer", updatedBeer.get().getBeerName());
+        });
     }
 
     @Test
@@ -415,22 +437,19 @@ class BeerClientImplWithTestContainerIT {
         beerToPatch.setQuantityOnHand(null);
 
         AtomicReference<BeerDto> patchedBeer = new AtomicReference<>();
-        beerClient.patchBeer(beerToPatch)
-            .subscribe(dto -> {
-                log.info("### Response: " + dto);
-                patchedBeer.set(dto);
-            });
+        beerClient.patchBeer(beerToPatch).subscribe(dto -> {
+            log.info("### Response: " + dto);
+            patchedBeer.set(dto);
+        });
 
-        await()
-            .atMost(20, TimeUnit.SECONDS)
-            .untilAsserted(() -> {
-                assertNotNull(patchedBeer.get());
-                assertEquals("Patched Beer", patchedBeer.get().getBeerName());
-                assertEquals(beerStyleBeforePatch, patchedBeer.get().getBeerStyle());
-                assertEquals(priceBeforePatch, patchedBeer.get().getPrice());
-                assertEquals(upcBeforePatch, patchedBeer.get().getUpc());
-                assertEquals(quantityBeforePatch, patchedBeer.get().getQuantityOnHand());
-            });
+        await().atMost(20, TimeUnit.SECONDS).untilAsserted(() -> {
+            assertNotNull(patchedBeer.get());
+            assertEquals("Patched Beer", patchedBeer.get().getBeerName());
+            assertEquals(beerStyleBeforePatch, patchedBeer.get().getBeerStyle());
+            assertEquals(priceBeforePatch, patchedBeer.get().getPrice());
+            assertEquals(upcBeforePatch, patchedBeer.get().getUpc());
+            assertEquals(quantityBeforePatch, patchedBeer.get().getQuantityOnHand());
+        });
     }
 
     @Test
@@ -439,24 +458,22 @@ class BeerClientImplWithTestContainerIT {
         AtomicBoolean atomicBoolean = new AtomicBoolean(false);
         AtomicReference<BeerDto> beerToDelete = new AtomicReference<>();
 
-        beerClient.listBeerAsDtos()
-            .next()
-            .flatMap(dto -> {
-                beerToDelete.set(dto);
-                return beerClient.deleteBeer(dto.getId());
-            })
-            .doOnSuccess(mt -> atomicBoolean.set(true))
-            .subscribe();
+        beerClient.listBeerAsDtos().next().flatMap(dto -> {
+            beerToDelete.set(dto);
+            return beerClient.deleteBeer(dto.getId());
+        }).doOnSuccess(mt -> atomicBoolean.set(true)).subscribe();
 
         await().untilTrue(atomicBoolean);
 
         try {
             beerClient.getBeerById(beerToDelete.get().getId()).block();
             fail("Beer not deleted");
-        } catch (WebClientResponseException ex) {
+        }
+        catch (WebClientResponseException ex) {
             log.info("### Beer successful: " + ex.getMessage());
             assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
             assertTrue(true);
         }
     }
+
 }
