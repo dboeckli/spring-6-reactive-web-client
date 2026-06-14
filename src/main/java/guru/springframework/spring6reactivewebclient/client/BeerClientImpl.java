@@ -11,8 +11,9 @@ import java.util.Map;
 
 @Service
 public class BeerClientImpl implements BeerClient {
-    
+
     private static final String BEER_PATH = "/api/v3/beer";
+
     public static final String BEER_PATH_ID = BEER_PATH + "/{beerId}";
 
     private final WebClient webClient;
@@ -25,39 +26,36 @@ public class BeerClientImpl implements BeerClient {
     public Mono<BeerDto> getBeerById(String beerId) {
         return webClient.get()
             .uri(uriBuilder -> uriBuilder.path(BEER_PATH_ID).build(beerId))
-            .retrieve().bodyToMono(BeerDto.class);
+            .retrieve()
+            .bodyToMono(BeerDto.class);
     }
 
     @Override
     public Flux<BeerDto> getBeerByBeerStyle(String beerStyle) {
-        return webClient.get().uri(uriBuilder -> uriBuilder.path(BEER_PATH)
-                .queryParam("beerStyle", beerStyle).build())
+        return webClient.get()
+            .uri(uriBuilder -> uriBuilder.path(BEER_PATH).queryParam("beerStyle", beerStyle).build())
             .retrieve()
             .bodyToFlux(BeerDto.class);
     }
 
     @Override
     public Flux<String> listBeer() {
-        return webClient.get().uri(BEER_PATH)
-            .retrieve().bodyToFlux(String.class);
+        return webClient.get().uri(BEER_PATH).retrieve().bodyToFlux(String.class);
     }
 
     @Override
     public Flux<Map> listBeerMap() {
-        return webClient.get().uri(BEER_PATH)
-            .retrieve().bodyToFlux(Map.class);
+        return webClient.get().uri(BEER_PATH).retrieve().bodyToFlux(Map.class);
     }
 
     @Override
     public Flux<JsonNode> listBeerJsonNode() {
-        return webClient.get().uri(BEER_PATH)
-            .retrieve().bodyToFlux(JsonNode.class);
+        return webClient.get().uri(BEER_PATH).retrieve().bodyToFlux(JsonNode.class);
     }
 
     @Override
     public Flux<BeerDto> listBeerAsDtos() {
-        return webClient.get().uri(BEER_PATH)
-            .retrieve().bodyToFlux(BeerDto.class);
+        return webClient.get().uri(BEER_PATH).retrieve().bodyToFlux(BeerDto.class);
     }
 
     @Override
@@ -67,9 +65,8 @@ public class BeerClientImpl implements BeerClient {
             .body(Mono.just(beerDto), BeerDto.class)
             .retrieve()
             .toBodilessEntity()
-            .flatMap(voidResponseEntity -> Mono.just(voidResponseEntity
-                .getHeaders().get("Location").getFirst()))
-            .map(path -> path.split("/")[path.split("/").length -1])
+            .flatMap(voidResponseEntity -> Mono.just(voidResponseEntity.getHeaders().get("Location").getFirst()))
+            .map(path -> path.split("/")[path.split("/").length - 1])
             .flatMap(this::getBeerById);
     }
 
@@ -101,4 +98,5 @@ public class BeerClientImpl implements BeerClient {
             .toBodilessEntity()
             .then();
     }
+
 }

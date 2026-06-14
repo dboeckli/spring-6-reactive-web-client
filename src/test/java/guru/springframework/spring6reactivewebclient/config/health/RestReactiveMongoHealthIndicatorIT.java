@@ -19,11 +19,14 @@ class RestReactiveMongoHealthIndicatorIT {
 
     @Test
     void testAuthServerHealthCheck() {
-        webTestClient.get().uri("/actuator/health/restReactiveMongo")
+        webTestClient.get()
+            .uri("/actuator/health/restReactiveMongo")
             .exchange()
-            .expectStatus().isOk()
+            .expectStatus()
+            .isOk()
             .expectBody()
-            .jsonPath("$.status").isEqualTo("UP");
+            .jsonPath("$.status")
+            .isEqualTo("UP");
     }
 
 }

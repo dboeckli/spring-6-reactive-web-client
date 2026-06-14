@@ -15,8 +15,9 @@ import org.springframework.security.web.server.SecurityWebFilterChain;
 public class SecurityConfig {
 
     @Bean
-    public ReactiveOAuth2AuthorizedClientManager authorizedClientManager(ReactiveClientRegistrationRepository clientRegistrationRepository,
-                                                                         ReactiveOAuth2AuthorizedClientService authorizedClientService) {
+    public ReactiveOAuth2AuthorizedClientManager authorizedClientManager(
+            ReactiveClientRegistrationRepository clientRegistrationRepository,
+            ReactiveOAuth2AuthorizedClientService authorizedClientService) {
 
         ReactiveOAuth2AuthorizedClientProvider authorizedClientProvider = ReactiveOAuth2AuthorizedClientProviderBuilder
             .builder()
@@ -24,8 +25,7 @@ public class SecurityConfig {
             .build();
 
         AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager authorizedClientManager = new AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager(
-            clientRegistrationRepository, authorizedClientService
-        );
+                clientRegistrationRepository, authorizedClientService);
 
         authorizedClientManager.setAuthorizedClientProvider(authorizedClientProvider);
 
@@ -35,18 +35,20 @@ public class SecurityConfig {
     @Bean
     @Order(99)
     public SecurityWebFilterChain securityWebFilterChain2(ServerHttpSecurity http) {
-        return http
-            .csrf(ServerHttpSecurity.CsrfSpec::disable)
-            .authorizeExchange(exchanges -> exchanges
-                .matchers(EndpointRequest.toAnyEndpoint()).permitAll()   // permit all actuator endpoints
-                .pathMatchers("/beers/**").permitAll()
-                .pathMatchers("/beer/**").permitAll()
-                .pathMatchers("/webjars/**").permitAll()
-                .pathMatchers("/favicon.ico").permitAll()
-                .anyExchange().authenticated()
-            )
+        return http.csrf(ServerHttpSecurity.CsrfSpec::disable)
+            .authorizeExchange(exchanges -> exchanges.matchers(EndpointRequest.toAnyEndpoint())
+                .permitAll() // permit all actuator endpoints
+                .pathMatchers("/beers/**")
+                .permitAll()
+                .pathMatchers("/beer/**")
+                .permitAll()
+                .pathMatchers("/webjars/**")
+                .permitAll()
+                .pathMatchers("/favicon.ico")
+                .permitAll()
+                .anyExchange()
+                .authenticated())
             .build();
     }
-    
 
 }

@@ -12,23 +12,24 @@ public class WebClientConfig implements WebClientCustomizer {
 
     @Value("${spring.security.oauth2.client.registration.springauth.client-name}")
     String clientRegistrationId;
-    
+
     private final String rootUrl;
-    
+
     private final ReactiveOAuth2AuthorizedClientManager authorizedClientManager;
 
-    public WebClientConfig(@Value("${webclient.reactive-mongo-url}") String rootUrl, ReactiveOAuth2AuthorizedClientManager authorizedClientManager) {
+    public WebClientConfig(@Value("${webclient.reactive-mongo-url}") String rootUrl,
+            ReactiveOAuth2AuthorizedClientManager authorizedClientManager) {
         this.rootUrl = rootUrl;
         this.authorizedClientManager = authorizedClientManager;
     }
 
     @Override
     public void customize(WebClient.Builder webClientBuilder) {
-        ServerOAuth2AuthorizedClientExchangeFilterFunction oauth = new ServerOAuth2AuthorizedClientExchangeFilterFunction(authorizedClientManager);
+        ServerOAuth2AuthorizedClientExchangeFilterFunction oauth = new ServerOAuth2AuthorizedClientExchangeFilterFunction(
+                authorizedClientManager);
         oauth.setDefaultClientRegistrationId(clientRegistrationId);
-        webClientBuilder
-            .baseUrl(rootUrl)
-            .filter(oauth);
-        //webClientBuilder.filter(oauth).filter(logbookExchangeFilterFunction).baseUrl(rootUrl);
+        webClientBuilder.baseUrl(rootUrl).filter(oauth);
+        // webClientBuilder.filter(oauth).filter(logbookExchangeFilterFunction).baseUrl(rootUrl);
     }
+
 }

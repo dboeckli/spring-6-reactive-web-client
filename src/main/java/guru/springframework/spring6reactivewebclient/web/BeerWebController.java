@@ -18,16 +18,12 @@ public class BeerWebController {
     public Mono<Rendering> getBeers() {
         return beerClient.listBeerAsDtos()
             .collectList()
-            .map(beers -> Rendering.view("beers")
-                .modelAttribute("beers", beers)
-                .build());
+            .map(beers -> Rendering.view("beers").modelAttribute("beers", beers).build());
     }
 
     @GetMapping("/beer/{id}")
     public Mono<Rendering> getBeerById(@PathVariable("id") String beerId) {
-        return beerClient.getBeerById(beerId)
-            .map(beer -> Rendering.view("beer")
-                .modelAttribute("beer", beer)
-                .build());
+        return beerClient.getBeerById(beerId).map(beer -> Rendering.view("beer").modelAttribute("beer", beer).build());
     }
+
 }

@@ -8,11 +8,11 @@ import tools.jackson.databind.JsonNode;
 import java.util.Map;
 
 public interface BeerClient {
-    
+
     Mono<BeerDto> getBeerById(String beerId);
 
     Flux<BeerDto> getBeerByBeerStyle(String beerStyle);
-    
+
     Flux<String> listBeer();
 
     Flux<Map> listBeerMap();
@@ -20,7 +20,7 @@ public interface BeerClient {
     Flux<JsonNode> listBeerJsonNode();
 
     Flux<BeerDto> listBeerAsDtos();
-    
+
     Mono<BeerDto> createBeer(BeerDto beerDto);
 
     Mono<BeerDto> updateBeer(BeerDto beerDto);
@@ -28,5 +28,5 @@ public interface BeerClient {
     Mono<BeerDto> patchBeer(BeerDto beerDto);
 
     Mono<Void> deleteBeer(String beerId);
-    
+
 }
