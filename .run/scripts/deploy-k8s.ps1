@@ -1,6 +1,6 @@
 cd target/helm/repo
 
-$file = Get-ChildItem -Filter spring-6-reactive-web-client-v*.tgz | Select-Object -First 1
+$file = Get-ChildItem -Filter spring-6-reactive-web-client-chart-*.tgz | Select-Object -First 1
 tar -xvf $file.Name
 
 $APPLICATION_NAME = Get-ChildItem -Directory | Where-Object { $_.LastWriteTime -ge $file.LastWriteTime } | Select-Object -ExpandProperty Name

@@ -18,23 +18,32 @@ that interacts with MongoDB, showcasing how to handle asynchronous data streams 
 - reactive-mongo module running on port 8083/30083
 - gateway module running on port 8080 (no gateway in kubernetes)
 
-```plaintext
-+---------+               +----------------+               +--------------------+
-| Client  |               | Gateway Server |               | Authentication     |
-| (makes  |  -----------> | (Port 8080)    |  -----------> | Server (Port 9000) |
-| request)|  <----------- |                |  <----------- | (returns token)    |
-+---------+               +----------------+               +--------------------+
-                                |   ^  
-                                |   |
-                                v   |
-                           +-------------------+               
-                           | Reactive-Mongo    |
-                           | (Port 8083)       |
-                           | (Executes         |
-                           | query and         |
-                           | creates           |
-                           | response)         |
-                           +-------------------+
+```mermaid
+graph LR
+    Client(["💻 Client"])
+
+    subgraph Auth ["OAuth2"]
+        AuthServer["Spring Auth Server\n:9000"]
+    end
+
+    subgraph WebApp ["Web Client"]
+        App["Spring Web Client\n:8087"]
+    end
+
+    subgraph Backends ["Backend Services"]
+        ReactiveMongo["Reactive Mongo\n:8083"]
+    end
+
+    subgraph Databases ["Databases"]
+        MongoDB[("MongoDB")]
+    end
+
+    AuthServer -->|"issues JWT"| Client
+    Client <-->|"HTTP (Bearer JWT)"| App
+    App <-->|"WebClient /api/v3/**"| ReactiveMongo
+    App -->|"client credentials"| AuthServer
+    ReactiveMongo -->|"validates JWT"| AuthServer
+    ReactiveMongo <--> MongoDB
 ```
 
 ## Web Interface
@@ -53,6 +62,36 @@ To access the openapi ui from the reactive-mongo server:
 
 - http://localhost:8083/swagger-ui/index.html
 - http://localhost:30083/swagger-ui/index.html
+
+## Sandbox (local dev environment)
+
+The sandbox consists of the app (Spring Boot, port 8087) plus an auth-server (port 9000),
+reactive-mongo (port 8083) and a gateway (port 8080), provided by `compose.yaml`. The services
+start automatically via `spring.docker.compose.enabled=true` when the app boots, so usually one
+step is enough.
+
+### Start the sandbox (opencode-sandbox-kit)
+
+The sandbox is provisioned by the opencode-sandbox-kit and runs as a Docker container. It mounts this
+repo, starts opencode, and connects the IntelliJ MCP server.
+
+Allow the kit source (GitHub without cloning):
+
+```powershell
+sbx settings set kit.allowedSources --% "[\"docker.io/\",\"github.com/dboeckli/\"]"
+```
+
+Start a new sandbox:
+
+```powershell
+sbx run opencode --name spring-6-reactive-web-client --kit "git+https://github.com/dboeckli/opencode-sandbox-kit.git#dir=opencode-agent" "C:\development\projects\spring-6-reactive-web-client"
+```
+
+Apply the kit to an existing sandbox (restarts the sandbox, VM state is kept):
+
+```powershell
+sbx kit add spring-6-reactive-web-client "git+https://github.com/dboeckli/opencode-sandbox-kit.git#dir=opencode-agent"
+```
 
 ## Kubernetes
 
@@ -100,7 +139,7 @@ cd target/helm/repo
 unpack
 
 ```powershell
-$file = Get-ChildItem -Filter spring-6-reactive-web-client-v*.tgz | Select-Object -First 1
+$file = Get-ChildItem -Filter spring-6-reactive-web-client-chart-*.tgz | Select-Object -First 1
 tar -xvf $file.Name
 ```
 
