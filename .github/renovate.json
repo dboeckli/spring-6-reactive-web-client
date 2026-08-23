@@ -17,12 +17,21 @@
         }
     },
     "enabledManagers": [
+        "maven",
         "maven-wrapper",
         "docker-compose",
         "kubernetes",
         "helm-values",
         "helmv3",
         "custom.regex"
+    ],
+    "ignorePaths": [
+        "**/node_modules/**",
+        "**/bower_components/**",
+        "**/vendor/**",
+        "**/examples/**",
+        "**/__tests__/**",
+        "**/__fixtures__/**"
     ],
     "maven-wrapper": {
         "managerFilePatterns": [
@@ -52,6 +61,27 @@
         ]
     },
     "packageRules": [
+        {
+            "description": "Ignore Maven APIs/SPIs",
+            "matchDatasources": [
+                "maven"
+            ],
+            "matchPackageNames": [
+                "org.apache.maven:*"
+            ],
+            "enabled": false
+        },
+        {
+            "matchDatasources": [
+                "helm"
+            ],
+            "matchPackageNames": [
+                "spring-6-auth-server-chart"
+            ],
+            "versioning": "maven",
+            "allowedVersions": "/^[0-9]+\\.[0-9]+\\.[0-9]+(-snapshot)?$/",
+            "ignoreUnstable": false
+        },
         {
             "matchCategories": [
                 "docker"
@@ -112,6 +142,66 @@
                 "  JAVA_VERSION:[\\t ]*(?<currentValue>\\d+)"
             ],
             "autoReplaceStringTemplate": "  JAVA_VERSION: {{{newValue}}}"
+        },
+        {
+            "description": "Update mongo image version in Testcontainers tests",
+            "customType": "regex",
+            "datasourceTemplate": "docker",
+            "depNameTemplate": "mongo",
+            "managerFilePatterns": [
+                "/(^|\\/)BeerClientImplWithTestContainerIT\\.java$/"
+            ],
+            "matchStrings": [
+                "MONGO_VERSION = \\\"(?<currentValue>[^\\\"]+)\\\""
+            ]
+        },
+        {
+            "description": "Update spring-6-auth-server image version in Testcontainers tests",
+            "customType": "regex",
+            "datasourceTemplate": "docker",
+            "depNameTemplate": "domboeckli/spring-6-auth-server",
+            "managerFilePatterns": [
+                "/(^|\\/)BeerClientImplWithTestContainerIT\\.java$/"
+            ],
+            "matchStrings": [
+                "AUTH_SERVER_VERSION = \\\"(?<currentValue>[^\\\"]+)\\\""
+            ]
+        },
+        {
+            "description": "Update spring-6-reactive-mongo image version in Testcontainers tests",
+            "customType": "regex",
+            "datasourceTemplate": "docker",
+            "depNameTemplate": "domboeckli/spring-6-reactive-mongo",
+            "managerFilePatterns": [
+                "/(^|\\/)BeerClientImplWithTestContainerIT\\.java$/"
+            ],
+            "matchStrings": [
+                "REACTIVE_MONGO_VERSION = \\\"(?<currentValue>[^\\\"]+)\\\""
+            ]
+        },
+        {
+            "description": "Update spring-6-gateway image version in Testcontainers tests",
+            "customType": "regex",
+            "datasourceTemplate": "docker",
+            "depNameTemplate": "domboeckli/spring-6-gateway",
+            "managerFilePatterns": [
+                "/(^|\\/)BeerClientImplWithTestContainerIT\\.java$/"
+            ],
+            "matchStrings": [
+                "GATEWAY_VERSION = \\\"(?<currentValue>[^\\\"]+)\\\""
+            ]
+        },
+        {
+            "description": "Update spring-6-auth-server-chart version in dependencies-Chart.yaml",
+            "customType": "regex",
+            "datasourceTemplate": "helm",
+            "managerFilePatterns": [
+                "/(^|\\/)dependencies-Chart\\.ya?ml$/"
+            ],
+            "matchStrings": [
+                "- name: (?<depName>spring-6-auth-server-chart)[\\s\\S]*?version: \\\"(?<currentValue>[^\\\"]+)\\\""
+            ],
+            "registryUrlTemplate": "https://repo.repsy.io/user08694146/helm-dboeckli"
         }
     ],
     "platformAutomerge": false,
