@@ -46,8 +46,8 @@ is needed here. On a normal host (Windows/CI) this does not apply either.
   not run during `verify`'s failsafe phase and vice versa.
 - ITs that need the running stack use `compose.yaml` (mongodb, auth-server, reactive-mongo, gateway).
 - `BeerClientImplWithTestContainerIT` uses **Testcontainers with multiple containers**
-  (`mongo:8.2.3`, `domboeckli/spring-6-auth-server:0.0.5-SNAPSHOT`,
-  `domboeckli/spring-6-reactive-mongo:0.0.1-SNAPSHOT`, `domboeckli/spring-6-gateway:0.0.3-SNAPSHOT`);
+  (`mongo:8.3.8`, `domboeckli/spring-6-auth-server:0.0.11-snapshot`,
+  `domboeckli/spring-6-reactive-mongo:0.0.1-snapshot`, `domboeckli/spring-6-gateway:0.0.3-snapshot`);
   `verify` therefore needs **Docker**.
 - A custom `TestClassOrderer` sorts test classes and `LocaleExtension` is auto-registered to force
   `Locale.US`. Do not add a global locale again.
