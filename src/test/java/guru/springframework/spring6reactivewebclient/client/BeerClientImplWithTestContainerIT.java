@@ -50,7 +50,7 @@ class BeerClientImplWithTestContainerIT {
 
     private static final String DOCKER_IMAGE_PREFIX = "domboeckli";
 
-    private static final String MONGO_VERSION = "8.3.9";
+    private static final String MONGO_VERSION = "8.3.11";
 
     private static final String AUTH_SERVER_VERSION = "0.0.11-snapshot";
 
