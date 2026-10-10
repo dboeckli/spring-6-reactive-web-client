@@ -1,19 +1,26 @@
 ### this retrieves the bearer token. use the token in the request below
+< scripts/traceparent.js
 POST http://localhost:{{auth-server-port}}/oauth2/token
 Authorization: Basic messaging-client secret
 Content-Type: application/x-www-form-urlencoded
+traceparent: 00-{{traceId}}-{{spanId}}-03
+baggage: testBaggage=spring-6-reactive-web-client
 
 grant_type=client_credentials&scope=message.read message.write
 
 ### this retrieves the bearer token via gateway. use the token in the request below
+< scripts/traceparent.js
 POST http://localhost:{{auth-server-port}}/oauth2/token
 Authorization: Basic messaging-client secret
 Content-Type: application/x-www-form-urlencoded
+traceparent: 00-{{traceId}}-{{spanId}}-03
+baggage: testBaggage=spring-6-reactive-web-client
 
 grant_type=client_credentials&scope=message.read message.write
 
 ###
+< scripts/traceparent.js
 GET http://localhost:{{auth-server-port}}/actuator/health/readiness
 Accept: application/json
-
-
+traceparent: 00-{{traceId}}-{{spanId}}-03
+baggage: testBaggage=spring-6-reactive-web-client

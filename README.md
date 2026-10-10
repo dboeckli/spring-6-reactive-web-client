@@ -1,12 +1,14 @@
 # spring-6-reactive-web-client
 
-Welcome to the Reactive Programming with Spring Framework project! This project is a practical exploration of reactive programming using Spring Framework 5,
-designed to help you understand and implement reactive systems. Here's a quick guide to get you started:
+This project is a reactive web client built with Spring Boot 4 and Spring Framework 6. It serves a
+Thymeleaf UI and uses the non-blocking `WebClient` to consume the `spring-6-reactive-mongo` backend,
+showcasing asynchronous, stream-based access to MongoDB data.
 
 ## Project Purpose
 
-The main goal of this project is to demonstrate how to build reactive applications using Spring Framework. It depends on a backend service (project spring-6-reactive-mongo)
-that interacts with MongoDB, showcasing how to handle asynchronous data streams effectively.
+The goal of this project is to demonstrate how to build a reactive client application on Spring's
+non-blocking stack. It calls the `spring-6-reactive-mongo` backend over HTTP and is secured with the
+OAuth2 `spring-6-auth-server` using the client credentials flow.
 
 ## Getting Started
 
@@ -88,7 +90,7 @@ sbx run opencode `
     --kit "git+https://codeberg.org/dboeckli/opencode-sandbox-kit.git#dir=opencode-agent" `
     --template docker.cloudsmith.io/dboeckli/sbx/sbx-opencode-tooling:latest `
     --skills=off `
-    --static-mcp idea `
+    --static-mcp idea,k8s,docker `
     . `
     "C:\development\maven-repo:ro"
 ```
