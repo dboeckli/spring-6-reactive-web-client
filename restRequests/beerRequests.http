@@ -1,27 +1,39 @@
 ### List Beers directly
+< scripts/traceparent.js
 GET http://localhost:{{reactive-mongo-port}}/api/v3/beer
 Accept: application/json
 Authorization: Bearer {{$auth.token("auth-id")}}
+traceparent: 00-{{traceId}}-{{spanId}}-03
+baggage: testBaggage=spring-6-reactive-web-client
 
 Content-Type: application/json
 
 ### List Beers via gateway. retrieve bearer token via gateway. does not work when running in kubenertes.
+< scripts/traceparent.js
 GET http://localhost:{{gateway-port}}/api/v3/beer
 Accept: application/json
 Authorization: Bearer {{$auth.token("auth-id")}}
+traceparent: 00-{{traceId}}-{{spanId}}-03
+baggage: testBaggage=spring-6-reactive-web-client
 
 Content-Type: application/json
 
 ### Get Beer by ID
+< scripts/traceparent.js
 GET http://localhost:{{reactive-mongo-port}}/api/v3/beer/6746d967f74ca306eaa56db3
 Accept: application/json
 Authorization: Bearer {{$auth.token("auth-id")}}
+traceparent: 00-{{traceId}}-{{spanId}}-03
+baggage: testBaggage=spring-6-reactive-web-client
 Content-Type: application/json
 
 ### Create Beer
+< scripts/traceparent.js
 POST http://localhost:{{reactive-mongo-port}}/api/v3/beer
 Accept: application/json
 Authorization: Bearer {{$auth.token("auth-id")}}
+traceparent: 00-{{traceId}}-{{spanId}}-03
+baggage: testBaggage=spring-6-reactive-web-client
 Content-Type: application/json
 
 {
@@ -33,9 +45,12 @@ Content-Type: application/json
 }
 
 ### Create Beer returns BAD REQUEST, beerName is to short
+< scripts/traceparent.js
 POST http://localhost:{{reactive-mongo-port}}/api/v3/beer
 Accept: application/json
 Authorization: Bearer {{$auth.token("auth-id")}}
+traceparent: 00-{{traceId}}-{{spanId}}-03
+baggage: testBaggage=spring-6-reactive-web-client
 Content-Type: application/json
 
 {
@@ -47,9 +62,12 @@ Content-Type: application/json
 }
 
 ### Update Beer by ID
+< scripts/traceparent.js
 PUT http://localhost:{{reactive-mongo-port}}/api/v3/beer/673b82a22082c509d439c02d
 Accept: application/json
 Authorization: Bearer {{$auth.token("auth-id")}}
+traceparent: 00-{{traceId}}-{{spanId}}-03
+baggage: testBaggage=spring-6-reactive-web-client
 Content-Type: application/json
 
 {
@@ -61,9 +79,12 @@ Content-Type: application/json
 }
 
 ### Update Beer by ID returns BAD REQUEST, beerStyle is empty
+< scripts/traceparent.js
 PUT http://localhost:{{reactive-mongo-port}}/api/v3/beer/1
 Accept: application/json
 Authorization: Bearer {{$auth.token("auth-id")}}
+traceparent: 00-{{traceId}}-{{spanId}}-03
+baggage: testBaggage=spring-6-reactive-web-client
 Content-Type: application/json
 
 {
@@ -75,9 +96,12 @@ Content-Type: application/json
 }
 
 ### Patch Beer by ID
+< scripts/traceparent.js
 PUT http://localhost:{{reactive-mongo-port}}/api/v3/beer/1
 Accept: application/json
 Authorization: Bearer {{$auth.token("auth-id")}}
+traceparent: 00-{{traceId}}-{{spanId}}-03
+baggage: testBaggage=spring-6-reactive-web-client
 Content-Type: application/json
 
 {
@@ -89,9 +113,12 @@ Content-Type: application/json
 }
 
 ### Patch Beer by ID. Beername is missing
+< scripts/traceparent.js
 PUT http://localhost:{{reactive-mongo-port}}/api/v3/beer/1
 Accept: application/json
 Authorization: Bearer {{$auth.token("auth-id")}}
+traceparent: 00-{{traceId}}-{{spanId}}-03
+baggage: testBaggage=spring-6-reactive-web-client
 Content-Type: application/json
 
 {
@@ -102,6 +129,9 @@ Content-Type: application/json
 }
 
 ### Delete Beer by ID
+< scripts/traceparent.js
 DELETE http://localhost:{{reactive-mongo-port}}/api/v3/beer/6746d967f74ca306eaa56db0
 Accept: application/json
 Authorization: Bearer {{$auth.token("auth-id")}}
+traceparent: 00-{{traceId}}-{{spanId}}-03
+baggage: testBaggage=spring-6-reactive-web-client
