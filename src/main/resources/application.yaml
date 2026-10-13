@@ -111,3 +111,11 @@ webclient:
 logging:
   level:
     guru.springframework.spring6reactivewebclient.log.RequestLoggingFilter: DEBUG
+
+appconfig:
+  request-logging:
+    # set to false to remove the request logging filter from the chain entirely
+    enabled: true
+    # request URI prefixes that are not logged
+    exclude-paths:
+      - /actuator/health
